@@ -1,8 +1,11 @@
 import requests
 import json
-from Controllers.personController import PersonsController
+
+from controllers.personController import PersonsController
 
 ORCID_API = 'https://pub.orcid.org/v3.0/expanded-search/'
+ASSETS_JSON_TMP= "data/apiassets.jsonld"
+
 
 class CollectPersonsController():
 
@@ -26,9 +29,9 @@ class CollectPersonsController():
 
     @staticmethod
     async def get_assets_list_persons():
-        file = open("/home/alejandro/PersonalData/CRAI/sp-Institution/apiassets.jsonld", "r")
+        file = open(ASSETS_JSON_TMP, "r")
         persons_assets = json.loads(file.read())
-        persons_assets = [persons_assets["hydra:member"][0]]
+        persons_assets = persons_assets["hydra:member"]
         for ele in persons_assets:
             _identifiers = [
                 {'idtype': 'userName', 'idvalue': ele['idUser']},
@@ -46,12 +49,16 @@ class CollectPersonsController():
                 # date_start = ele.start,
                 # date_end = ele.end,
             )
-            return await PersonsController.insert(fixed_person)
 
+            await PersonsController.insert(fixed_person)
 
+async def test():
+    from database import person_collection, pids_collection
+    pids = await pids_collection.find_one({"idtype":"userName", "idvalue": 'any            '})
+    print(pids)
 if __name__ == '__main__':
     # print(get_orcid_list_by_org())
-    f = open("/home/alejandro/PersonalData/CRAI/sp-Institution/apiassets.jsonld", "r")
-    data = f.read()
-    persons = json.loads(data)
-    print(persons["hydra:member"])
+    import asyncio
+    # asyncio.run(test())
+    asyncio.run(CollectPersonsController.get_assets_list_persons())
+

@@ -2,7 +2,7 @@
 import uvicorn
 from fastapi import FastAPI
 
-from Routes.persons import router as PersonRouter
+from routes.persons import router as PersonRouter
 
 app = FastAPI()
 

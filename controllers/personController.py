@@ -1,7 +1,7 @@
-from Models.persons import PersonSchema
+from models.persons import PersonSchema
 from database import person_collection, pids_collection
 from bson.objectid import ObjectId
-from Controllers.pidsController import PidsController
+from controllers.pidsController import PidsController
 
 
 # helpers
@@ -38,13 +38,21 @@ class PersonsController():
     async def insert(person: PersonSchema) -> PersonSchema:
         new_person = {}
         identifiers = person['identifiers']
+        update=False
         for identifier in identifiers:
-            pids = await pids_collection.find_one({"idtype": identifier['idtype'], "idvalue": identifier['idvalue']})
-            if not pids:
-                person = await person_collection.insert_one(person)
-                new_person = person_helper(await person_collection.find_one({"_id": person.inserted_id}))
-                await PidsController.insert(identifiers, new_person['_id'])
-                break
+            pids = await pids_collection.find_one({"idvalue": identifier['idvalue']})
+            if pids:
+                update = True
+            pids = None
+        if update:
+            print("do an update")
+        else:
+            print("NEEEEEEEEEWWW")
+            person = await person_collection.insert_one(person)
+            new_person = person_helper(await person_collection.find_one({"_id": person.inserted_id}))
+            await PidsController.insert(identifiers, new_person['_id'])
+        print("=========================")
+
         return new_person
 
     # Retrieve a person with a matching ID

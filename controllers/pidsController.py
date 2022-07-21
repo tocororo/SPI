@@ -1,6 +1,6 @@
 import uuid
-from Models.pids import PidsSchema
-from Models.persons import PersonSchema
+from models.pids import PidsSchema
+from models.persons import PersonSchema
 from database import database, pids_collection
 from bson.objectid import ObjectId
 
