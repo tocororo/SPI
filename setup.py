@@ -2,11 +2,11 @@ from setuptools import setup
 
 setup(
     name='spi',
-    version='',
-    packages=['tasks', 'models', 'routes', 'controllers'],
+    version='0.0.1',
+    packages=['spi', 'spi.tasks'],
     url='',
     license='',
     author='malayo',
-    author_email='',
+    author_email='malayibiri@gmail.com',
     description=''
     )
