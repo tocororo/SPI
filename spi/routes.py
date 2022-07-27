@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from spi.controllers import PersonsController
-from spi.models import Response
+from spi.models import Response, error_response_model
 
 router = APIRouter()
 
@@ -14,9 +14,13 @@ async def get_all():
         ).dict(exclude_none=True)
 
 
-@router.get("/persons/{id}")
-async def get_one(id: str):
-    person = await PersonsController.retrieve_person(id)
-    return Response(code=200, status="Ok", message="Success retrieve data", result=person).dict(
-        exclude_none=True
-        )
+@router.get("/person")
+async def get_one(idExpediente: str):
+    person = await PersonsController.retrieve_person(idExpediente)
+    if person:
+        return Response(code=200, status="Ok", message="Success retrieve data", result=person).dict(
+            exclude_none=True
+            )
+    else:
+        return error_response_model('not Found', 404, "Pids not found")
+

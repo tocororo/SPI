@@ -1,7 +1,7 @@
 from bson.objectid import ObjectId
 
 from spi.database import get_persons_collection, get_pids_collection
-from spi.models import PersonSchema, PidsSchema
+from spi.models import PersonSchema, PidsSchema, error_response_model
 
 
 def person_helper(person) -> dict:
@@ -27,8 +27,9 @@ class PersonsController():
     # Retrieve all persons present in the database
     @staticmethod
     async def retrieve():
+        persons_collection = await get_persons_collection()
         persons = []
-        async for person in get_persons_collection.find():
+        async for person in persons_collection.find():
             persons.append(person_helper(person))
         return persons
 
@@ -60,12 +61,17 @@ class PersonsController():
 
     # Retrieve a person with a matching ID
     async def retrieve_person(idExpediente: str) -> PersonSchema:
-        person_collection = get_persons_collection()
-        pids_collection = get_pids_collection()
+        person_collection = await get_persons_collection()
+        pids_collection = await get_pids_collection()
         pids = await pids_collection.find_one({"idvalue": idExpediente})
-        person = await person_collection.find_one({"_id": ObjectId(pids.person_id)})
-        if person:
-            return person_helper(person)
+        if pids:
+            person = await person_collection.find_one({"_id": ObjectId(pids['person_id'])})
+            if person:
+                return person_helper(person)
+            else:
+                return None
+        else:
+            return None
 
 
 # helpers
@@ -92,7 +98,7 @@ class PidsController():
     # Retrieve all pidss present in the database
     @staticmethod
     async def retrieve():
-        pids_collection = get_pids_collection()
+        pids_collection = await get_pids_collection()
         pidss = []
         async for pids in pids_collection.find():
             pidss.append(pids_helper(pids))
@@ -104,7 +110,7 @@ class PidsController():
         pids_collection = await get_pids_collection()
         for _identifier in pids:
             new_pid = dict(
-                person_id=person_id,
+                person_id=ObjectId(person_id),
                 idtype=_identifier['idtype'],
                 idvalue=_identifier['idvalue']
             )
