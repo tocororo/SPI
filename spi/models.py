@@ -24,6 +24,7 @@ class IdentifiersSchema(BaseModel):
 
 
 class PersonSchema(BaseModel):
+    _id: ObjectId()
     identifiers: ClassVar[List[Tuple[str, str]]]
     name: str
     lastName: str

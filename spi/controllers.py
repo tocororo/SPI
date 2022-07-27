@@ -51,10 +51,10 @@ class PersonsController():
         else:
             print("NEEEEEEEEEWWW")
             person = await person_collection.insert_one(person)
-            new_person = person_helper(
-                await person_collection.find_one({"_id": person.inserted_id})
-            )
-            await PidsController.insert(identifiers, new_person['_id'])
+            # new_person = person_helper(
+            #     await person_collection.find_one({"_id": person.inserted_id})
+            # )
+            await PidsController.insert(identifiers, person.inserted_id)
         print("=========================")
 
         return new_person
@@ -115,7 +115,7 @@ class PidsController():
                 idvalue=_identifier['idvalue']
             )
             await pids_collection.insert_one(new_pid)
-        return new_pid
+        # return new_pid
 
     # Retrieve a pids with a matching ID
     async def retrieve_pids(id: str) -> PidsSchema:
