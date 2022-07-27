@@ -42,3 +42,4 @@ class PidsSchema(BaseModel):
     _id: ObjectId()
     idtype: str
     idvalue: str
+    #todo considerar campo source para conocer la fuente del identificador ( puede coincidir con el type )

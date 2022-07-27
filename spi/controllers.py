@@ -19,7 +19,7 @@ def person_helper(person) -> dict:
         # "active": person["active"],
         # "date_start": person["date_start"],
         # "date_end": person["date_end"],
-        }
+    }
 
 
 class PersonsController():
@@ -38,8 +38,8 @@ class PersonsController():
         new_person = {}
         identifiers = person['identifiers']
         update = False
-        pids_collection = get_pids_collection()
-        person_collection = get_persons_collection()
+        pids_collection = await get_pids_collection()
+        person_collection = await get_persons_collection()
         for identifier in identifiers:
             pids = await pids_collection.find_one({"idvalue": identifier['idvalue']})
             if pids:
@@ -52,16 +52,18 @@ class PersonsController():
             person = await person_collection.insert_one(person)
             new_person = person_helper(
                 await person_collection.find_one({"_id": person.inserted_id})
-                )
+            )
             await PidsController.insert(identifiers, new_person['_id'])
         print("=========================")
 
         return new_person
 
     # Retrieve a person with a matching ID
-    async def retrieve_person(id: str) -> PersonSchema:
+    async def retrieve_person(idExpediente: str) -> PersonSchema:
         person_collection = get_persons_collection()
-        person = await person_collection.find_one({"_id": ObjectId(id)})
+        pids_collection = get_pids_collection()
+        pids = await pids_collection.find_one({"idvalue": idExpediente})
+        person = await person_collection.find_one({"_id": ObjectId(pids.person_id)})
         if person:
             return person_helper(person)
 
@@ -82,7 +84,7 @@ def pids_helper(pids) -> dict:
         # "active": pids["active"],
         # "date_start": pids["date_start"],
         # "date_end": pids["date_end"],
-        }
+    }
 
 
 class PidsController():
@@ -99,14 +101,15 @@ class PidsController():
     # Add a new pids into to the database
     @staticmethod
     async def insert(pids: list, person_id: str):
-        pids_collection = get_pids_collection()
+        pids_collection = await get_pids_collection()
         for _identifier in pids:
             new_pid = dict(
                 person_id=person_id,
                 idtype=_identifier['idtype'],
                 idvalue=_identifier['idvalue']
-                )
+            )
             await pids_collection.insert_one(new_pid)
+        return new_pid
 
     # Retrieve a pids with a matching ID
     async def retrieve_pids(id: str) -> PidsSchema:
