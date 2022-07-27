@@ -12,6 +12,8 @@ pydantic={version = "~=1.9.1", extras = ["email"] }
 pymongo="~=4.2.0"
 celery="~=5.2.7"
 redis="~=4.3.4"
+rdflib="~=6.1.1"
+setuptools = "==61.0.0"
 
 [dev-packages]
 
