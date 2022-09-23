@@ -12,8 +12,8 @@ def person_helper(person) -> dict:
         "lastName": person["lastName"],
         "gender": person["gender"],
         "country": person["country"],
-        # "email": person["email"],
-        # "aliases": person["aliases"],
+        "email": person["email"],
+        "aliases": person["aliases"],
         # "affiliations": person["affiliations"],
         # "subaffiliations": person["subaffiliations"],
         # "active": person["active"],
@@ -59,11 +59,42 @@ class PersonsController():
 
         return new_person
 
+    # Update a student with a matching ID
+    @staticmethod
+    async def update_person(_id: str, data: dict):
+        # Return false if an empty request body is sent.
+        if len(data) < 1:
+            return False
+        else:
+            person_collection = await get_persons_collection()
+            updated_person = await person_collection.update_one(
+                {"_id": ObjectId(_id)}, {"$set": data}
+            )
+            if updated_person:
+                return True
+            return False
+
     # Retrieve a person with a matching ID
+    @staticmethod
     async def retrieve_person(idExpediente: str) -> PersonSchema:
         person_collection = await get_persons_collection()
         pids_collection = await get_pids_collection()
         pids = await pids_collection.find_one({"idvalue": idExpediente})
+        if pids:
+            person = await person_collection.find_one({"_id": ObjectId(pids['person_id'])})
+            if person:
+                return person_helper(person)
+            else:
+                return None
+        else:
+            return None
+
+    # Retrieve a person with a matching noCI
+    @staticmethod
+    async def retrieve_person_by_CI(noCi: str) -> PersonSchema:
+        person_collection = await get_persons_collection()
+        pids_collection = await get_pids_collection()
+        pids = await pids_collection.find_one({"idvalue": noCi})
         if pids:
             person = await person_collection.find_one({"_id": ObjectId(pids['person_id'])})
             if person:
@@ -78,18 +109,9 @@ class PersonsController():
 def pids_helper(pids) -> dict:
     return {
         "id": str(pids["_id"]),
-        "identifiers": pids["identifiers"],
-        "name": pids["name"],
-        "lastName": pids["lastName"],
-        "gender": pids["gender"],
-        "country": pids["country"],
-        # "email": pids["email"],
-        # "aliases": pids["aliases"],
-        # "affiliations": pids["affiliations"],
-        # "subaffiliations": pids["subaffiliations"],
-        # "active": pids["active"],
-        # "date_start": pids["date_start"],
-        # "date_end": pids["date_end"],
+        "person_id": pids["person_id"],
+        "idtype": pids["idtype"],
+        "idvalue": pids["idvalue"],
     }
 
 
@@ -117,9 +139,10 @@ class PidsController():
             await pids_collection.insert_one(new_pid)
         # return new_pid
 
-    # Retrieve a pids with a matching ID
-    async def retrieve_pids(id: str) -> PidsSchema:
-        pids_collection = get_pids_collection()
-        pids = await pids_collection.find_one({"_id": ObjectId(id)})
+    # Retrieve a pids with a matching noCI
+    @staticmethod
+    async def retrieve_pids_by_CI(noCi: str) -> PidsSchema:
+        pids_collection = await get_pids_collection()
+        pids = await pids_collection.find_one({"idvalue": noCi})
         if pids:
             return pids_helper(pids)
