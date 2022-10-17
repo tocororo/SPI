@@ -17,14 +17,13 @@ ld.set_option(ldap.OPT_REFERRALS, 0)
 
 
 # get list of persons from ldap protocol
-async def get_ldap_list_persons():
+def get_ldap_list_persons():
     try:
         # print(ld.simple_bind_s(user_dn, password))
         ld.simple_bind_s(user_dn, password)
         # results = ld.search_s(base_dn, ldap.SCOPE_SUBTREE, search_filter)
         results = ld.search_s(base_dn, ldap.SCOPE_SUBTREE)
         ld.unbind_s()
-        await save_ldap_list_persons(results)
         return results
     except ldap.INVALID_CREDENTIALS:
         print("Your username or password is invalid.")
@@ -67,7 +66,9 @@ if __name__ == '__main__':
     asyncio.run(connect())
 
     # results = get_ldap_list_persons()
-    asyncio.run(get_ldap_list_persons())
+    list = asyncio.run(get_ldap_list_persons())
+    asyncio.run(save_ldap_list_persons(list))
+
     # print(results)
 
     # for dn, entry in results:

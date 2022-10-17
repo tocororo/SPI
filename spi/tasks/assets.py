@@ -3,14 +3,15 @@ import json
 from spi.controllers import PersonsController
 from spi.database import connect
 
-ASSETS_JSON_TMP = "../../data/apiassets.jsonld"
+ASSETS_JSON_TMP = "data/apiassets.jsonld"
 
 
 # get list of persons from assets
-async def get_assets_list_persons():
+def get_assets_list_persons():
     file = open(ASSETS_JSON_TMP, "r")
     persons_assets = json.loads(file.read())
     persons_assets = persons_assets["hydra:member"]
+    persons_assets_fixed = []
 
     for assets in persons_assets:
         _identifiers = [
@@ -33,13 +34,18 @@ async def get_assets_list_persons():
             # date_start = ele.start,
             # date_end = ele.end,
         )
+        persons_assets_fixed.append(fixed_person)
+    return persons_assets_fixed
 
-        # insert normalized person to DB
-        await PersonsController.insert(fixed_person)
 
+# insert normalized person to DB
+async def save_assets_list_persons():
+    assets_list_persons = get_assets_list_persons()
+    for person in assets_list_persons:
+        await PersonsController.insert(person)
 
 if __name__ == '__main__':
     import asyncio
 
     asyncio.run(connect())
-    asyncio.run(get_assets_list_persons())
+    asyncio.run(save_assets_list_persons())

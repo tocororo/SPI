@@ -1,6 +1,6 @@
 from bson.objectid import ObjectId
 
-from spi.database import get_persons_collection, get_pids_collection
+from spi.database import get_persons_collection, get_pids_collection, get_orcid_collection
 from spi.models import PersonSchema, PidsSchema, error_response_model
 
 
@@ -146,3 +146,35 @@ class PidsController():
         pids = await pids_collection.find_one({"idvalue": noCi})
         if pids:
             return pids_helper(pids)
+
+
+# helpers
+def orcid_helper(orcid) -> dict:
+    return {
+        "id": str(orcid["_id"]),
+        "orcid_id": orcid["orcid_id"],
+        "given_names": orcid["given_names"],
+        "family_names": orcid["family_names"],
+    }
+
+
+class OrcidController():
+    @staticmethod
+    async def retrieve():
+        orcid_collection = await get_orcid_collection()
+        orcid_list = []
+        async for orcid in orcid_collection.find():
+            orcid_list.append(orcid_helper(orcid))
+        return orcid_list
+
+    # Add a new pids into to the database
+    @staticmethod
+    async def insert(orcid: dict):
+        orcid_collection = await get_orcid_collection()
+        new_orcid = dict(
+            orcid_id=orcid['orcid-id'],
+            given_names=orcid['given-names'],
+            family_names=orcid['family-names']
+        )
+        await orcid_collection.insert_one(new_orcid)
+        # return new_pid

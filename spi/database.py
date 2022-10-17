@@ -26,6 +26,9 @@ async def get_persons_collection():
 async def get_pids_collection():
     return db.client[MONGO_DB].get_collection("pids")
 
+async def get_orcid_collection():
+    return db.client[MONGO_DB].get_collection("orcid")
+
 
 async def connect():
     """Connect to MONGO DB
