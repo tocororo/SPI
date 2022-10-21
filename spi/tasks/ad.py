@@ -66,7 +66,7 @@ if __name__ == '__main__':
     asyncio.run(connect())
 
     # results = get_ldap_list_persons()
-    list = asyncio.run(get_ldap_list_persons())
+    list = get_ldap_list_persons()
     asyncio.run(save_ldap_list_persons(list))
 
     # print(results)
