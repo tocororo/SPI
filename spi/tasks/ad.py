@@ -69,7 +69,7 @@ if __name__ == '__main__':
     list = get_ldap_list_persons()
     asyncio.run(save_ldap_list_persons(list))
 
-    # print(results)
+    #print(results) 
 
     # for dn, entry in results:
     # print(entry['displayName'][0].decode("utf-8"))

@@ -1,9 +1,10 @@
 import json
+import os
 
 from spi.controllers import PersonsController
 from spi.database import connect
 
-ASSETS_JSON_TMP = "data/apiassets.jsonld"
+ASSETS_JSON_TMP = str(os.getenv("ASSETS_JSON_TMP"))
 
 
 # get list of persons from assets
