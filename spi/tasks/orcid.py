@@ -1,15 +1,16 @@
-from spi.controllers import PersonsController
-from spi.database import connect
-from spi.tasks.ad import get_ldap_list_persons
-from spi.controllers import OrcidController
-
+import os
 import requests
 import json
 import time
 from random import randint
 
-ORCID_API = 'https://pub.orcid.org/v3.0/expanded-search/'
-ASSETS_JSON_TMP = "../../data/apiassets.jsonld"
+from spi.controllers import PersonsController
+from spi.database import connect
+from spi.tasks.ad import get_ldap_list_persons
+from spi.controllers import OrcidController
+
+ORCID_API = str(os.getenv("ORCID_API"))
+ASSETS_JSON_TMP = str(os.getenv("ASSETS_JSON_TMP"))
 
 
 def get_orcid_list_by_name(given_names: str = '', family_name: str = '') -> str:
