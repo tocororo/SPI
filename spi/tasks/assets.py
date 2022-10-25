@@ -1,7 +1,7 @@
 import json
 import os
 
-from spi.controllers import PersonsController
+from spi.controllers import PersonsController, PidsController
 from spi.database import connect
 
 ASSETS_JSON_TMP = str(os.getenv("ASSETS_JSON_TMP"))
@@ -25,8 +25,10 @@ def get_assets_list_persons():
         # normalize person from assets to persons model
         fixed_person = dict(
             identifiers=_identifiers,
-            name=assets['nombre'],
-            lastName=lastName,
+            assets_name=assets['nombre'],
+            assets_lastName=lastName,
+            ldap_name='',
+            ldap_lastName='',
             gender=assets['sexo'].replace(" ", ""),
             country=assets['pais'].replace(" ", ""),
             email='',
@@ -42,8 +44,24 @@ def get_assets_list_persons():
 # insert normalized person to DB
 async def save_assets_list_persons():
     assets_list_persons = get_assets_list_persons()
+
     for person in assets_list_persons:
-        await PersonsController.insert(person)
+        can_insert = True
+        identifiers = person['identifiers']
+
+        for identifier in identifiers:
+            pids = await PidsController.retrieve_one({"idvalue": identifier['idvalue']})
+            if pids:
+                print("UPDATE ONE")
+                print("=========================")
+                await PersonsController.update_person(pids['person_id'], person)
+                can_insert = False
+                break
+        if can_insert:
+            print("INSERT ONE")
+            print("=========================")
+            await PersonsController.insert(person)
+
 
 if __name__ == '__main__':
     import asyncio

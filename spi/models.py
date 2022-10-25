@@ -26,8 +26,10 @@ class IdentifiersSchema(BaseModel):
 class PersonSchema(BaseModel):
     _id: ObjectId()
     identifiers: ClassVar[List[Tuple[str, str]]]
-    name: str
-    lastName: str
+    assets_name: str
+    assets_lastName: str
+    ldap_name: str
+    ldap_lastName: str
     gender: str
     country: str
     email: EmailStr
@@ -43,4 +45,12 @@ class PidsSchema(BaseModel):
     _id: ObjectId()
     idtype: str
     idvalue: str
-    #todo considerar campo source para conocer la fuente del identificador ( puede coincidir con el type )
+    # todo: considerar campo source para conocer la fuente del identificador ( puede coincidir con el type )
+
+class OrcidSchema(BaseModel):
+    _id: ObjectId()
+    orcid_id: str
+    given_names: str
+    family_names: str
+    full_name: str
+    person_id: str

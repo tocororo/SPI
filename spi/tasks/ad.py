@@ -39,25 +39,44 @@ async def save_ldap_list_persons(ldap_persons):
         # check for the employeeID and get the person
         if entry and 'employeeID' in entry.keys():
             employeeID = entry['employeeID'][0].decode("utf-8")
-            person = await PersonsController.retrieve_person_by_CI(employeeID)
+            person = await PersonsController.retrieve_one({"idvalue": employeeID})
+
+            # check for the ldap_name and ldap_lastName and update them
+            if person and 'givenName' in entry.keys() and 'sn' in entry.keys():
+                name = entry['givenName'][0].decode("utf-8")
+                lastname = entry['sn'][0].decode("utf-8")
+                await PersonsController.update_person(
+                    person['_id'],
+                    dict(ldap_name=name, ldap_lastName=lastname)
+                )
+                print('update ldap_name and ldap_lastName')
+                print("=========================")
 
             # check for the employeeID and update the person's aliases
-            if person and entry and 'displayName' in entry.keys() and 'displayName' in entry.keys():
+            if person and entry and 'displayName' in entry.keys():
                 aliases = person['aliases']
                 displayName = entry['displayName'][0].decode("utf-8")
                 if displayName not in aliases:
                     aliases += [entry['displayName'][0].decode("utf-8")]
-                    await PersonsController.update_person(person['_id'], dict(aliases=aliases))
+                    await PersonsController.update_person(
+                        person['_id'],
+                        dict(aliases=aliases)
+                    )
                     print('update aliases')
+                    print("=========================")
 
             # check for the mail and update the person's email
             if entry and 'mail' in entry.keys():
                 employeeID = entry['employeeID'][0].decode("utf-8")
                 mail = entry['mail'][0].decode("utf-8")
-                pids = await PidsController.retrieve_pids_by_CI(employeeID)
+                pids = await PidsController.retrieve_one({"idvalue": employeeID})
                 if pids:
-                    await PersonsController.update_person(pids['person_id'], dict(email=mail))
+                    await PersonsController.update_person(
+                        pids['person_id'],
+                        dict(email=mail)
+                    )
                     print('update email')
+                    print("=========================")
 
 
 if __name__ == '__main__':
