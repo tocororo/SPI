@@ -139,7 +139,7 @@ async def get_orcid_list():
             orcid_list = get_orcid_list_by_full_name(alias)
             await update_orcid_by_person(person['_id'], orcid_list)
 
-        orcid_list = await OrcidController.retrieve({"person_id": person['_id']})
+        orcid_list = await OrcidController.retrieve_one({"person_id": person['_id']})
 
         for orcid_item in orcid_list:
             if person['email'] in get_email_by_orcid(orcid_item['orcid_id']):
