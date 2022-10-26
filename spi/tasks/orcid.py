@@ -83,7 +83,7 @@ def get_email_by_orcid(orcid: str = '') -> str:
 
 
 # if exist update a person with the orcid_id from orcid api
-async def update_orcid_by_person(person_id, orcid_list):
+async def get_orcid_search_by_person(person_id, orcid_list):
     if orcid_list:
         for orcid_item in orcid_list:
             if orcid_item['given-names']:
@@ -120,28 +120,40 @@ async def update_orcid_by_person(person_id, orcid_list):
 
 async def get_orcid_list():
     persons = await PersonsController.retrieve()
-    for person in persons:
 
-        # wait a time before execute query for assets orcid
+    for person in persons:
+        ldap_name = person['ldap_name']
+        ldap_lastName = person['ldap_lastName']
+
+        # wait a time before execute query for get_orcid_list_by_name_and_last_name
         sleep_time = randint(3, 9)
         print('sleep {0} seconds'.format(sleep_time))
         time.sleep(sleep_time)
 
-        ldap_name = person['ldap_name']
-        ldap_lastName = person['ldap_lastName']
-
-        await update_orcid_by_person(
+        await get_orcid_search_by_person(
             person['_id'],
             get_orcid_list_by_name_and_last_name(ldap_name, ldap_lastName)
         )
 
+
+        # wait a time before execute query for get_orcid_list_by_full_name
+        sleep_time = randint(3, 9)
+        print('sleep {0} seconds'.format(sleep_time))
+        time.sleep(sleep_time)
+
         for alias in person['aliases']:
             orcid_list = get_orcid_list_by_full_name(alias)
-            await update_orcid_by_person(person['_id'], orcid_list)
+            await get_orcid_search_by_person(person['_id'], orcid_list)
 
         orcid_list = await OrcidController.retrieve_one({"person_id": person['_id']})
 
         for orcid_item in orcid_list:
+
+            # wait a time before execute query for email orcid
+            sleep_time = randint(3, 9)
+            print('sleep {0} seconds'.format(sleep_time))
+            time.sleep(sleep_time)
+
             if person['email'] in get_email_by_orcid(orcid_item['orcid_id']):
                 print('UPDATE ORCID_ID BY PERSON EMAIL')
                 print("=========================")
