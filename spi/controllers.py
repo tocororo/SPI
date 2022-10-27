@@ -8,10 +8,8 @@ def person_helper(person) -> dict:
     return {
         "_id": str(person["_id"]),
         "identifiers": person["identifiers"],
-        "assets_name": person["assets_name"],
-        "assets_lastName": person["assets_lastName"],
-        "ldap_name": person["ldap_name"],
-        "ldap_lastName": person["ldap_lastName"],
+        "name": person["name"],
+        "lastName": person["lastName"],
         "gender": person["gender"],
         "country": person["country"],
         "email": person["email"],
@@ -96,7 +94,7 @@ class PersonsController():
 # helpers
 def pids_helper(pids) -> dict:
     return {
-        "id": str(pids["_id"]),
+        "_id": str(pids["_id"]),
         "person_id": pids["person_id"],
         "idtype": pids["idtype"],
         "idvalue": pids["idvalue"],
@@ -139,7 +137,7 @@ class PidsController():
 # helpers
 def orcid_helper(orcid) -> dict:
     return {
-        "id": str(orcid["_id"]),
+        "_id": str(orcid["_id"]),
         "orcid_id": orcid["orcid_id"],
         "given_names": orcid["given_names"],
         "family_names": orcid["family_names"],
@@ -179,3 +177,18 @@ class OrcidController():
         )
         await orcid_collection.insert_one(new_orcid)
         # return new_pid
+
+    # Update a student with a matching ID
+    @staticmethod
+    async def update(_id: str, data: dict):
+        # Return false if an empty request body is sent.
+        if len(data) < 1:
+            return False
+        else:
+            orcid_collection = await get_orcid_collection()
+            updated_item = await orcid_collection.update_one(
+                {"_id": ObjectId(_id)}, {"$set": data}
+            )
+            if updated_item:
+                return True
+            return False

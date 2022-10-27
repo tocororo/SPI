@@ -1,5 +1,6 @@
 import json
 import os
+import string
 
 from spi.controllers import PersonsController, PidsController
 from spi.database import connect
@@ -20,19 +21,18 @@ def get_assets_list_persons():
             {'idtype': 'idExpediente', 'idvalue': assets['idExpediente'].replace(" ", "")},
             {'idtype': 'noCi', 'idvalue': assets['noCi'].replace(" ", "")}
         ]
-        lastName = assets['apellido1'] + ' ' + assets['apellido2']
+        name = string.capwords(assets['nombre'])
+        lastName = string.capwords(assets['apellido1']) + ' ' + string.capwords(assets['apellido2'])
 
         # normalize person from assets to persons model
         fixed_person = dict(
             identifiers=_identifiers,
-            assets_name=assets['nombre'],
-            assets_lastName=lastName,
-            ldap_name='',
-            ldap_lastName='',
+            name=name,
+            lastName=lastName,
             gender=assets['sexo'].replace(" ", ""),
             country=assets['pais'].replace(" ", ""),
             email='',
-            aliases=[assets['nombre'] + ' ' + lastName]
+            aliases=[name + ' ' + lastName]
             # active = ele.activo,
             # date_start = ele.start,
             # date_end = ele.end,

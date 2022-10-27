@@ -41,17 +41,6 @@ async def save_ldap_list_persons(ldap_persons):
             employeeID = entry['employeeID'][0].decode("utf-8")
             person = await PersonsController.retrieve_one({"idvalue": employeeID})
 
-            # check for the ldap_name and ldap_lastName and update them
-            if person and 'givenName' in entry.keys() and 'sn' in entry.keys():
-                name = entry['givenName'][0].decode("utf-8")
-                lastname = entry['sn'][0].decode("utf-8")
-                await PersonsController.update_person(
-                    person['_id'],
-                    dict(ldap_name=name, ldap_lastName=lastname)
-                )
-                print('update ldap_name and ldap_lastName')
-                print("=========================")
-
             # check for the employeeID and update the person's aliases
             if person and entry and 'displayName' in entry.keys():
                 aliases = person['aliases']
