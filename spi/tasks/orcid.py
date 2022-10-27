@@ -3,7 +3,6 @@ import requests
 import json
 import time
 from random import randint
-from unidecode import unidecode
 
 from spi.controllers import PersonsController, OrcidController
 from spi.database import connect
