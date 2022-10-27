@@ -117,9 +117,9 @@ async def save_orcid_search_by_person(person_id, orcid_list):
             # if orcid_item['orcid-id'] not in orcid_list_cleaned and orcid_full_name == ldap_displayName:
 
             existent_orcid_item = await OrcidController.retrieve_one({'orcid_id': orcid_item['orcid-id']})
-            item = existent_orcid_item[0]
-            id = item['_id']
-            if len(existent_orcid_item) > 0 and item:
+            if len(existent_orcid_item) > 0 and existent_orcid_item[0]:
+                item = existent_orcid_item[0]
+                id = item['_id']
                 print('UPDATE ORCID -> PERSON_ID')
                 print("=========================")
                 item.update({
