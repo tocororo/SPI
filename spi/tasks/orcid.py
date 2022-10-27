@@ -159,35 +159,34 @@ async def get_orcid_list():
     # save_orcid_search_by_affiliation_and_domain()
 
     for person in persons:
-        if (person['name'] + ' ' + person['lastName']) == 'Edel Abreu Hernandez':
-            for alias in person['aliases']:
-                # wait a time before execute query for get_orcid_list_by_full_name
-                sleep_time = randint(3, 5)
-                print('sleep {0} seconds'.format(sleep_time))
-                time.sleep(sleep_time)
+        for alias in person['aliases']:
+            # wait a time before execute query for get_orcid_list_by_full_name
+            sleep_time = randint(3, 5)
+            print('sleep {0} seconds'.format(sleep_time))
+            time.sleep(sleep_time)
 
-                first_name = person['name']
-                split_at = len(first_name) + 1
-                left, right = alias[:split_at], alias[split_at:]
+            first_name = person['name']
+            split_at = len(first_name) + 1
+            left, right = alias[:split_at], alias[split_at:]
 
-                await save_orcid_search_by_person(
-                    person['_id'],
-                    get_orcid_list_by_name_and_last_name(left, right),
-                )
-            orcid_list = await OrcidController.retrieve_one({"person_id": person['_id']})
+            await save_orcid_search_by_person(
+                person['_id'],
+                get_orcid_list_by_name_and_last_name(left, right),
+            )
+        orcid_list = await OrcidController.retrieve_one({"person_id": person['_id']})
 
-            for orcid_item in orcid_list:
+        for orcid_item in orcid_list:
 
-                # wait a time before execute query for email orcid
-                sleep_time = randint(3, 5)
-                print('sleep {0} seconds'.format(sleep_time))
-                time.sleep(sleep_time)
+            # wait a time before execute query for email orcid
+            sleep_time = randint(3, 5)
+            print('sleep {0} seconds'.format(sleep_time))
+            time.sleep(sleep_time)
 
-                if person['email'] in get_email_by_orcid(orcid_item['orcid_id']) or orcid_item['full_name'] in person['aliases']:
-                    await PersonsController.update_person(person['_id'], dict(orcid=orcid_item['orcid_id']))
-                    print('UPDATE ORCID_ID BY PERSON EMAIL')
-                    print("=========================")
-                    break
+            if person['email'] in get_email_by_orcid(orcid_item['orcid_id']) or orcid_item['full_name'] in person['aliases']:
+                await PersonsController.update_person(person['_id'], dict(orcid=orcid_item['orcid_id']))
+                print('UPDATE ORCID_ID BY PERSON EMAIL')
+                print("=========================")
+                break
 
 
 if __name__ == '__main__':
