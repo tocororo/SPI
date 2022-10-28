@@ -1,6 +1,5 @@
 import os
 import requests
-import json
 import time
 from random import randint
 
@@ -12,7 +11,7 @@ ORCID_API = str(os.getenv("ORCID_API"))
 ASSETS_JSON_TMP = str(os.getenv("ASSETS_JSON_TMP"))
 
 
-def get_orcid_list_by_name_and_last_name(given_names: str = '', family_name: str = '') -> str:
+def get_orcid_list_by_name_and_last_name(given_names: str = '', family_name: str = '') -> list:
     """
         Return a list of persons according to the organization
         @params:
@@ -32,12 +31,11 @@ def get_orcid_list_by_name_and_last_name(given_names: str = '', family_name: str
         'q': f'(given-names:{given_names.lower()}) AND (family-name:{family_name.lower()})'
     }
     response = requests.get(f'{ORCID_API}/expanded-search/', headers=headers, params=params)
-    # return response.text
-    if response.text and 'expanded-result' in json.loads(response.text).keys():
+    if response.status_code == 200 and len(response.json().keys()) > 0:
         print('GET ORCID LIST BY NAME AND LAST NAME')
         print("=========================")
-        return json.loads(response.text)['expanded-result']
-    return None
+        return response.json()['expanded-result']
+    return []
 
 
 def get_email_by_orcid(orcid: str = '') -> str:
@@ -51,11 +49,11 @@ def get_email_by_orcid(orcid: str = '') -> str:
     }
     response = requests.get(f'{ORCID_API}/{orcid}/email/', headers=headers)
     # return response.text
-    if response.text and 'email' in json.loads(response.text).keys():
+    if response.status_code == 200 and len(response.json().keys()) > 0:
         print('GET ORCID PERSON BY EMAIL')
         print("=========================")
         emails = []
-        for email in json.loads(response.text)['email']:
+        for email in response.json()['email']:
             emails.append(email['email'])
         return emails
     return []
@@ -76,15 +74,11 @@ def get_orcid_list_by_affiliation_and_domain(orcid: str = '') -> str:
     params = {
         'q': '(current-institution-affiliation-name:"Universidad de Pinar del Río") OR (email:*@upr.edu.cu)'
     }
-    response = requests.get(f'{ORCID_API}/{orcid}/email/', headers=headers, params=params)
-    # return response.text
-    if response.text and 'email' in json.loads(response.text).keys():
+    response = requests.get(f'{ORCID_API}/expanded-search/', headers=headers, params=params)
+    if response.status_code == 200 and len(response.json().keys()) > 0:
         print('GET ORCID List BY INSTITUTION AND DOMAIN')
         print("=========================")
-        emails = []
-        for email in json.loads(response.text)['email']:
-            emails.append(email['email'])
-        return emails
+        return response.json()['expanded-result']
     return []
 
 
@@ -137,25 +131,27 @@ async def save_orcid_search_by_person(person_id, orcid_list):
                 await OrcidController.insert(orcid_item)
 
 
-async def save_orcid_search_by_affiliation_and_domain():
+async def save_orcid_search_by_affiliation_and_domain():    
     orcid_list_by_affiliation_and_domain = get_orcid_list_by_affiliation_and_domain()
-    for orcid_item in orcid_list_by_affiliation_and_domain:
-        full_name = normalize_full_name_orcid(orcid_item)
+    if orcid_list_by_affiliation_and_domain:
+        for orcid_item in orcid_list_by_affiliation_and_domain:
+            full_name = normalize_full_name_orcid(orcid_item)
 
-        print('INSERT ORCID PERSON')
-        print("=========================")
-        new_orcid_item = {
-            "orcid_id": orcid_item['orcid-id'],
-            "given_names": orcid_item['given-names'],
-            "family_names": orcid_item['family-names'],
-            "full_name": full_name,
-        }
-        await OrcidController.insert(new_orcid_item)
+            print('INSERT ORCID PERSON')
+            print("=========================")
+            new_orcid_item = {
+                "orcid-id": orcid_item['orcid-id'],
+                "given-names": orcid_item['given-names'],
+                "family-names": orcid_item['family-names'],
+                "full_name": full_name,
+                "person_id":''
+            }
+            await OrcidController.insert(new_orcid_item)
 
 
 async def get_orcid_list():
     persons = await PersonsController.retrieve()
-    # save_orcid_search_by_affiliation_and_domain()
+    await save_orcid_search_by_affiliation_and_domain()
 
     for person in persons:
         for alias in person['aliases']:
@@ -181,7 +177,8 @@ async def get_orcid_list():
             print('sleep {0} seconds'.format(sleep_time))
             time.sleep(sleep_time)
 
-            if person['email'] in get_email_by_orcid(orcid_item['orcid_id']) or orcid_item['full_name'] in person['aliases']:
+            email_list = get_email_by_orcid(orcid_item['orcid_id'])
+            if email_list and person['email'] in email_list or orcid_item['full_name'] in person['aliases']:
                 await PersonsController.update_person(person['_id'], dict(orcid=orcid_item['orcid_id']))
                 print('UPDATE ORCID_ID BY PERSON EMAIL')
                 print("=========================")
