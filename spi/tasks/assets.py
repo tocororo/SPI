@@ -1,48 +1,42 @@
-import json
-import os
-from pathlib import Path
-import string
-import pandas as pd
+import json, csv, os, string, array
 
 from spi.controllers import PersonsController, PidsController
 from spi.database import connect
 
-ASSETS_JSONLD_TMP = str(os.getenv("ASSETS_JSONLD_TMP"))
-ASSETS_CSV_TMP = str(os.getenv("ASSETS_CSV_TMP"))
-ASSETS_JSON_TMP = str(os.getenv("ASSETS_JSON_TMP"))
+ASSETS_JSONLD_PATH = str(os.getenv("ASSETS_JSONLD_PATH"))
+ASSETS_CSV_PATH = str(os.getenv("ASSETS_CSV_PATH"))
 
-def csv_to_json(csv_file_path, json_file_path):
-    #create a dictionary
+def get_assets_from_csv():
     data_dict = {}
- 
-    #Step 2
-    #open a csv file handler
-    with open(csv_file_path, encoding = 'utf-8') as csv_file_handler:
-        csv_reader = csv.DictReader(csv_file_handler)
- 
-        #convert each row into a dictionary
-        #and add the converted data to the data_variable
- 
-        for rows in csv_reader:
- 
-            #assuming a column named 'No'
-            #to be the primary key
-            key = rows['Serial Number']
-            data_dict[key] = rows
- 
-    #open a json file handler and use json.dumps
-    #method to dump the data
-    #Step 3
-    with open(json_file_path, 'w', encoding = 'utf-8') as json_file_handler:
-        #Step 4
-        json_file_handler.write(json.dumps(data_dict, indent = 4))
+    dict_array_formated = []
+    if os.path.exists(ASSETS_CSV_PATH) and os.path.isfile(ASSETS_CSV_PATH) :
+        with open(ASSETS_CSV_PATH, encoding = 'utf-8') as csv_file_handler:
+            csv_reader = csv.DictReader(csv_file_handler)
+            #convert each row into a dictionary and add the converted data to the data_variable
+    
+            for rows in csv_reader:
+                #assuming a column named 'No' to be the primary key
+                key = rows["No"]
+                data_dict[int(key) - 1] = rows
+    
+        dict_array = array.array('L', data_dict.keys())
+        for i, key in enumerate(dict_array):
+            dict_array_formated.append(data_dict[key])
+        return dict_array_formated
+    else:
+        return dict_array_formated
 
 
 # get list of persons from assets
 def get_assets_list_persons():
-    file = open(ASSETS_JSONLD_TMP, "r")
+    file = open(ASSETS_JSONLD_PATH, "r")
     persons_assets = json.loads(file.read())
-    persons_assets = persons_assets["hydra:member"]
+    
+    if (len(get_assets_from_csv) > 0):
+        persons_assets = get_assets_from_csv()
+    else:
+        persons_assets = persons_assets["hydra:member"]
+        
     persons_assets_fixed = []
 
     for assets in persons_assets:
@@ -98,5 +92,3 @@ if __name__ == '__main__':
 
     asyncio.run(connect())
     # asyncio.run(save_assets_list_persons())
-    
-    csv_to_json(ASSETS_CSV_TMP, ASSETS_JSON_TMP)
