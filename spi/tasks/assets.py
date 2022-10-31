@@ -30,12 +30,14 @@ def get_assets_from_csv():
 # get list of persons from assets
 def get_assets_list_persons():
     file = open(ASSETS_JSONLD_PATH, "r")
-    persons_assets = json.loads(file.read())
+    assets_from_jsonld = json.loads(file.read())    
+    assets_from_csv = get_assets_from_csv()
+    persons_assets = []
     
-    if (len(get_assets_from_csv) > 0):
-        persons_assets = get_assets_from_csv()
+    if (len(assets_from_csv) > 0):
+        persons_assets = assets_from_csv
     else:
-        persons_assets = persons_assets["hydra:member"]
+        persons_assets = assets_from_jsonld["hydra:member"]
         
     persons_assets_fixed = []
 
