@@ -1,11 +1,10 @@
-import os
-import requests
-import time
+import os, requests, time
 from random import randint
 
 from spi.controllers import PersonsController, OrcidController
 from spi.database import connect
 from spi.controllers import OrcidController
+from spi.routes import make_request
 
 ORCID_API = str(os.getenv("ORCID_API"))
 ASSETS_JSON_TMP = str(os.getenv("ASSETS_JSON_TMP"))
@@ -30,7 +29,7 @@ def get_orcid_list_by_name_and_last_name(given_names: str = '', family_name: str
     params = {
         'q': f'(given-names:{given_names.lower()}) AND (family-name:{family_name.lower()})'
     }
-    response = requests.get(f'{ORCID_API}/expanded-search/', headers=headers, params=params)
+    response = make_request(f'{ORCID_API}/expanded-search/', headers=headers, params=params)
     if response.status_code == 200 and len(response.json().keys()) > 0:
         print('GET ORCID LIST BY NAME AND LAST NAME')
         print("=========================")
@@ -47,7 +46,7 @@ def get_email_by_orcid(orcid: str = '') -> str:
                       'Chrome/102.0.0.0 Safari/537.36',
         'Accept': 'application/json'
     }
-    response = requests.get(f'{ORCID_API}/{orcid}/email/', headers=headers)
+    response = make_request(f'{ORCID_API}/{orcid}/email/', headers=headers)
     # return response.text
     if response.status_code == 200 and len(response.json().keys()) > 0:
         print('GET ORCID PERSON BY EMAIL')
@@ -74,7 +73,7 @@ def get_orcid_list_by_affiliation_and_domain(orcid: str = '') -> str:
     params = {
         'q': '(current-institution-affiliation-name:"Universidad de Pinar del Río") OR (email:*@upr.edu.cu)'
     }
-    response = requests.get(f'{ORCID_API}/expanded-search/', headers=headers, params=params)
+    response = make_request(f'{ORCID_API}/expanded-search/', headers=headers, params=params)
     if response.status_code == 200 and len(response.json().keys()) > 0:
         print('GET ORCID List BY INSTITUTION AND DOMAIN')
         print("=========================")
@@ -156,9 +155,9 @@ async def get_orcid_list():
     for person in persons:
         for alias in person['aliases']:
             # wait a time before execute query for get_orcid_list_by_full_name
-            sleep_time = randint(3, 5)
-            print('sleep {0} seconds'.format(sleep_time))
-            time.sleep(sleep_time)
+            # sleep_time = randint(3, 5)
+            # print('sleep {0} seconds'.format(sleep_time))
+            # time.sleep(sleep_time)
 
             first_name = person['name']
             split_at = len(first_name) + 1
@@ -173,9 +172,9 @@ async def get_orcid_list():
         for orcid_item in orcid_list:
 
             # wait a time before execute query for email orcid
-            sleep_time = randint(3, 5)
-            print('sleep {0} seconds'.format(sleep_time))
-            time.sleep(sleep_time)
+            # sleep_time = randint(5, 10)
+            # print('sleep {0} seconds'.format(sleep_time))
+            # time.sleep(sleep_time)
 
             email_list = get_email_by_orcid(orcid_item['orcid_id'])
             if email_list and person['email'] in email_list or orcid_item['full_name'] in person['aliases']:
