@@ -91,4 +91,5 @@ if __name__ == '__main__':
     import asyncio
 
     asyncio.run(connect())
-    # asyncio.run(save_assets_list_persons())
+    asyncio.run(save_assets_list_persons())
+    # print(get_assets_from_csv())
