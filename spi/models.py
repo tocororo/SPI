@@ -31,6 +31,7 @@ class PersonSchema(BaseModel):
     gender: str
     country: str
     email: EmailStr
+    orcid: str
     aliases: list
     affiliations: list
     subaffiliations: list
