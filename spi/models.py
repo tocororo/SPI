@@ -33,6 +33,7 @@ class PersonSchema(BaseModel):
     email: EmailStr
     orcid: str
     aliases: list
+    orcid_search: list
     affiliations: list
     subaffiliations: list
     active: bool
