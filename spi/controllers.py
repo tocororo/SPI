@@ -1,27 +1,15 @@
+from unittest import result
 from bson.objectid import ObjectId
 
 from spi.database import get_persons_collection, get_pids_collection, get_orcid_collection
 from spi.models import PersonSchema, PidsSchema, error_response_model
 
 
-def person_helper(person) -> dict:
-    return {
-        "_id": str(person["_id"]),
-        "identifiers": person["identifiers"],
-        "name": person["name"],
-        "lastName": person["lastName"],
-        "gender": person["gender"],
-        "country": person["country"],
-        "email": person["email"],
-        "aliases": person["aliases"],
-        # "affiliations": person["affiliations"],
-        # "subaffiliations": person["subaffiliations"],
-        # "active": person["active"],
-        # "date_start": person["date_start"],
-        # "date_end": person["date_end"],
-    }
+"""Controller for Persons 
 
-
+    Returns:
+        _type_: _description_
+"""
 class PersonsController():
 
     # Retrieve all persons present in the database
@@ -29,8 +17,30 @@ class PersonsController():
     async def retrieve():
         persons_collection = await get_persons_collection()
         persons = []
+        
         async for person in persons_collection.find():
-            persons.append(person_helper(person))
+            persons.append(person)
+        return persons
+    
+    @staticmethod
+    async def retrieve_person_search(id: str):
+        persons_collection = await get_persons_collection()
+        persons = []
+        
+        async for person in  persons_collection.aggregate([
+            {"$lookup": 
+                {
+                    "from": "orcid",
+                    "localField": "_id",
+                    "foreignField": "person_id",
+                    "as": "search_results"
+                }
+            },
+        ]):
+            persons.append({'_id': person['_id'], 'search_results': person['search_results']})
+
+        # result = next(item for item in persons if item["_id"] == id)
+        # print(result)
         return persons
 
     # Add a new person into to the database
@@ -69,7 +79,7 @@ class PersonsController():
         if pids:
             person = await person_collection.find_one({"_id": ObjectId(pids['person_id'])})
             if person:
-                return person_helper(person)
+                return person
             else:
                 return None
         else:
@@ -84,23 +94,18 @@ class PersonsController():
         if pids:
             person = await person_collection.find_one({"_id": ObjectId(pids['person_id'])})
             if person:
-                return person_helper(person)
+                return person
             else:
                 return None
         else:
             return None
 
 
-# helpers
-def pids_helper(pids) -> dict:
-    return {
-        "_id": str(pids["_id"]),
-        "person_id": pids["person_id"],
-        "idtype": pids["idtype"],
-        "idvalue": pids["idvalue"],
-    }
+"""Controller for PIDS
 
-
+Returns:
+    _type_: _description_
+"""
 class PidsController():
 
     # Retrieve all pidss present in the database
@@ -109,7 +114,7 @@ class PidsController():
         pids_collection = await get_pids_collection()
         pidss = []
         async for pids in pids_collection.find():
-            pidss.append(pids_helper(pids))
+            pidss.append(pids)
         return pidss
 
     # Add a new pids into to the database
@@ -131,28 +136,21 @@ class PidsController():
         pids_collection = await get_pids_collection()
         pids = await pids_collection.find_one(obj)
         if pids:
-            return pids_helper(pids)
+            return pids
 
 
-# helpers
-def orcid_helper(orcid) -> dict:
-    return {
-        "_id": str(orcid["_id"]),
-        "orcid_id": orcid["orcid_id"],
-        "given_names": orcid["given_names"],
-        "family_names": orcid["family_names"],
-        "full_name": orcid["full_name"],
-        "person_id": orcid["person_id"],
-    }
+"""Controller for Orcid
 
-
+Returns:
+    _type_: _description_
+"""
 class OrcidController():
     @staticmethod
     async def retrieve():
         orcid_collection = await get_orcid_collection()
         orcid_list = []
         async for orcid in orcid_collection.find():
-            orcid_list.append(orcid_helper(orcid))
+            orcid_list.append(orcid)
         return orcid_list
 
     # retrive list of orcid persons for a specific person_id
@@ -161,7 +159,7 @@ class OrcidController():
         orcid_collection = await get_orcid_collection()
         orcid_list = []
         async for orcid in orcid_collection.find(obj):
-            orcid_list.append(orcid_helper(orcid))
+            orcid_list.append(orcid)
         return orcid_list
 
     # Add a new pids into to the database
@@ -192,3 +190,11 @@ class OrcidController():
             if updated_item:
                 return True
             return False
+
+
+if __name__ == '__main__':
+    import asyncio
+    from spi.database import connect
+
+    asyncio.run(connect())
+    asyncio.run(PersonsController.retrieve_person_search('635abfb8aeb90faac17b110f'))
