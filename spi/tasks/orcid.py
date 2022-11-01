@@ -1,5 +1,6 @@
 import os, requests, time
 from random import randint
+from bson.objectid import ObjectId
 
 from spi.controllers import PersonsController, OrcidController
 from spi.database import connect
@@ -116,7 +117,7 @@ async def save_orcid_search_by_person(person_id, orcid_list):
                 print('UPDATE ORCID -> PERSON_ID')
                 print("=========================")
                 item.update({
-                    "person_id": person_id
+                    "person_id": ObjectId(person_id)
                 })
                 del item['_id']
                 await OrcidController.update(id, item)
@@ -125,7 +126,7 @@ async def save_orcid_search_by_person(person_id, orcid_list):
                 print("=========================")
                 orcid_item.update({
                     "full_name": full_name,
-                    "person_id": person_id
+                    "person_id": ObjectId(person_id)
                 })
                 await OrcidController.insert(orcid_item)
 
