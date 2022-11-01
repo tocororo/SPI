@@ -39,9 +39,8 @@ class PersonsController():
         ]):
             persons.append({'_id': person['_id'], 'search_results': person['search_results']})
 
-        # result = next(item for item in persons if item["_id"] == id)
-        # print(result)
-        return persons
+        result = next((item for item in persons if item["_id"] == id), None)
+        return result
 
     # Add a new person into to the database
     @staticmethod
