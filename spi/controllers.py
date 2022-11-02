@@ -2,6 +2,7 @@ from unittest import result
 from bson.objectid import ObjectId
 
 from spi.database import get_persons_collection, get_pids_collection, get_orcid_collection
+from spi.handlers import orcid_helper, person_helper, person_search_helper, pids_helper
 from spi.models import PersonSchema, PidsSchema, error_response_model
 
 
@@ -19,7 +20,7 @@ class PersonsController():
         persons = []
         
         async for person in persons_collection.find():
-            persons.append(person)
+            persons.append(person_helper(person))
         return persons
     
     @staticmethod
@@ -39,8 +40,8 @@ class PersonsController():
         ]):
             persons.append({'_id': person['_id'], 'search_results': person['search_results']})
 
-        result = next((item for item in persons if item["_id"] == id), None)
-        return result
+        result = next((item for item in persons if item["_id"] == id), {})
+        return person_search_helper(result)
 
     # Add a new person into to the database
     @staticmethod
@@ -49,10 +50,8 @@ class PersonsController():
         person_collection = await get_persons_collection()
 
         person = await person_collection.insert_one(person)
-        # new_person = person_helper(
-        #     await person_collection.find_one({"_id": person.inserted_id})
-        # )
-        await PidsController.insert(identifiers, person.inserted_id)
+        inserted_person = await PidsController.insert(identifiers, person.inserted_id)
+        return inserted_person
 
     # Update a student with a matching ID
     @staticmethod
@@ -65,9 +64,7 @@ class PersonsController():
             updated_person = await person_collection.update_one(
                 {"_id": ObjectId(_id)}, {"$set": data}
             )
-            if updated_person:
-                return True
-            return False
+            return updated_person
 
     # Retrieve a person with a matching ID
     @staticmethod
@@ -78,26 +75,11 @@ class PersonsController():
         if pids:
             person = await person_collection.find_one({"_id": ObjectId(pids['person_id'])})
             if person:
-                return person
+                return person_helper(person)
             else:
-                return None
+                return {}
         else:
-            return None
-
-    # Retrieve a person with a matching noCI
-    @staticmethod
-    async def retrieve_one(obj: dict) -> PersonSchema:
-        person_collection = await get_persons_collection()
-        pids_collection = await get_pids_collection()
-        pids = await pids_collection.find_one(obj)
-        if pids:
-            person = await person_collection.find_one({"_id": ObjectId(pids['person_id'])})
-            if person:
-                return person
-            else:
-                return None
-        else:
-            return None
+            return {}
 
 
 """Controller for PIDS
@@ -113,7 +95,7 @@ class PidsController():
         pids_collection = await get_pids_collection()
         pidss = []
         async for pids in pids_collection.find():
-            pidss.append(pids)
+            pidss.append(pids_helper(pids))
         return pidss
 
     # Add a new pids into to the database
@@ -126,7 +108,8 @@ class PidsController():
                 idtype=_identifier['idtype'],
                 idvalue=_identifier['idvalue']
             )
-            await pids_collection.insert_one(new_pid)
+            inserted_pids = await pids_collection.insert_one(new_pid)
+            return pids_helper(inserted_pids)
         # return new_pid
 
     # Retrieve a pids with a matching noCI
@@ -135,7 +118,7 @@ class PidsController():
         pids_collection = await get_pids_collection()
         pids = await pids_collection.find_one(obj)
         if pids:
-            return pids
+            return pids_helper(pids)
 
 
 """Controller for Orcid
@@ -149,17 +132,9 @@ class OrcidController():
         orcid_collection = await get_orcid_collection()
         orcid_list = []
         async for orcid in orcid_collection.find():
-            orcid_list.append(orcid)
+            orcid_list.append(orcid_helper(orcid))
         return orcid_list
 
-    # retrive list of orcid persons for a specific person_id
-    @staticmethod
-    async def retrieve_one(obj: dict):
-        orcid_collection = await get_orcid_collection()
-        orcid_list = []
-        async for orcid in orcid_collection.find(obj):
-            orcid_list.append(orcid)
-        return orcid_list
 
     # Add a new pids into to the database
     @staticmethod
@@ -172,8 +147,8 @@ class OrcidController():
             full_name=orcid['full_name'],
             person_id=orcid['person_id']
         )
-        await orcid_collection.insert_one(new_orcid)
-        # return new_pid
+        inserted_orcid = await orcid_collection.insert_one(new_orcid)
+        return pids_helper(inserted_orcid)
 
     # Update a student with a matching ID
     @staticmethod
@@ -186,10 +161,7 @@ class OrcidController():
             updated_item = await orcid_collection.update_one(
                 {"_id": ObjectId(_id)}, {"$set": data}
             )
-            if updated_item:
-                return True
-            return False
-
+            return updated_item
 
 if __name__ == '__main__':
     import asyncio
