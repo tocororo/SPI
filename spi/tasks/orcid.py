@@ -111,6 +111,7 @@ async def save_orcid_search_by_person(person_id, orcid_list):
             # if orcid_item['orcid-id'] not in orcid_list_cleaned and orcid_full_name == ldap_displayName:
 
             existent_orcid_item = await OrcidController.retrieve_one({'orcid_id': orcid_item['orcid-id']})
+            
             if len(existent_orcid_item) > 0 and existent_orcid_item[0]:
                 item = existent_orcid_item[0]
                 id = item['_id']
@@ -137,52 +138,68 @@ async def save_orcid_search_by_affiliation_and_domain():
         for orcid_item in orcid_list_by_affiliation_and_domain:
             full_name = normalize_full_name_orcid(orcid_item)
 
-            print('INSERT ORCID PERSON')
-            print("=========================")
-            new_orcid_item = {
-                "orcid-id": orcid_item['orcid-id'],
-                "given-names": orcid_item['given-names'],
-                "family-names": orcid_item['family-names'],
-                "full_name": full_name,
-                "person_id":''
-            }
-            await OrcidController.insert(new_orcid_item)
+            existent_orcid_item = await OrcidController.retrieve_one({'orcid_id': orcid_item['orcid-id']})
+            
+            if len(existent_orcid_item) > 0 and existent_orcid_item[0]:
+                item = existent_orcid_item[0]
+                id = item['_id']
+                print('UPDATE ORCID -> EXISTENt ORCID_ID')
+                print("=========================")
+                del item['_id']
+                await OrcidController.update(id, item)                
+            else:    
+                print('INSERT ORCID PERSON')
+                print("=========================")
+                new_orcid_item = {
+                    "orcid-id": orcid_item['orcid-id'],
+                    "given-names": orcid_item['given-names'],
+                    "family-names": orcid_item['family-names'],
+                    "full_name": full_name,
+                    "person_id":''
+                }
+                await OrcidController.insert(new_orcid_item)
 
 
 async def get_orcid_list():
     persons = await PersonsController.retrieve()
-    await save_orcid_search_by_affiliation_and_domain()
+    # await save_orcid_search_by_affiliation_and_domain()
 
+    persons_search = await PersonsController.retrieve_person_search()
+    
     for person in persons:
-        for alias in person['aliases']:
-            # wait a time before execute query for get_orcid_list_by_full_name
-            # sleep_time = randint(3, 5)
-            # print('sleep {0} seconds'.format(sleep_time))
-            # time.sleep(sleep_time)
+        exit_person = next((item for item in persons_search if item["_id"] == person['_id']), None)
+        print('exist person')
+        print(person['_id'])
+        if not exit_person:
+            for alias in person['aliases']:
+                # wait a time before execute query for get_orcid_list_by_full_name
+                # sleep_time = randint(3, 5)
+                # print('sleep {0} seconds'.format(sleep_time))
+                # time.sleep(sleep_time)
 
-            first_name = person['name']
-            split_at = len(first_name) + 1
-            left, right = alias[:split_at], alias[split_at:]
+                first_name = person['name']
+                split_at = len(first_name) + 1
+                left, right = alias[:split_at], alias[split_at:]
 
-            await save_orcid_search_by_person(
-                person['_id'],
-                get_orcid_list_by_name_and_last_name(left, right),
-            )
-        orcid_list = await OrcidController.retrieve_one({"person_id": person['_id']})
+                await save_orcid_search_by_person(
+                    person['_id'],
+                    get_orcid_list_by_name_and_last_name(left, right),
+                )
+            orcid_list = await OrcidController.retrieve_one({"person_id": person['_id']})
 
-        for orcid_item in orcid_list:
+            for orcid_item in orcid_list:
 
-            # wait a time before execute query for email orcid
-            # sleep_time = randint(5, 10)
-            # print('sleep {0} seconds'.format(sleep_time))
-            # time.sleep(sleep_time)
+                # wait a time before execute query for email orcid
+                # sleep_time = randint(5, 10)
+                # print('sleep {0} seconds'.format(sleep_time))
+                # time.sleep(sleep_time)
 
-            email_list = get_email_by_orcid(orcid_item['orcid_id'])
-            if email_list and person['email'] in email_list or orcid_item['full_name'] in person['aliases']:
-                await PersonsController.update_person(person['_id'], dict(orcid=orcid_item['orcid_id']))
-                print('UPDATE ORCID_ID BY PERSON EMAIL')
-                print("=========================")
-                break
+                email_list = get_email_by_orcid(orcid_item['orcid_id'])
+                if email_list and person['email'] in email_list or orcid_item['full_name'] in person['aliases']:
+                    await PersonsController.update_person(person['_id'], dict(orcid=orcid_item['orcid_id']))
+                    print('UPDATE ORCID_ID BY PERSON EMAIL')
+                    print("=========================")
+                    break
 
 
 if __name__ == '__main__':
