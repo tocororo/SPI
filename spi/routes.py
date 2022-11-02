@@ -7,7 +7,7 @@ from spi.models import Response, error_response_model
 
 router = APIRouter()
 
-def make_request(url: str = '', headers: dict = '', params: dict = ''):
+def make_request(url: str = '', headers: dict = {}, params: dict = {}):
     session = requests.Session()
     retry = Retry(connect=5, backoff_factor=0.5)
     adapter = HTTPAdapter(max_retries=retry)

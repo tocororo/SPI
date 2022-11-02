@@ -5,6 +5,7 @@ from bson.objectid import ObjectId
 from spi.controllers import PersonsController, OrcidController
 from spi.database import connect
 from spi.controllers import OrcidController
+from spi.logger_base import create_log
 from spi.routes import make_request
 
 ORCID_API = str(os.getenv("ORCID_API"))
@@ -162,33 +163,48 @@ async def save_orcid_search_by_affiliation_and_domain():
 
 async def get_orcid_list():
     persons = await PersonsController.retrieve()
-    await save_orcid_search_by_affiliation_and_domain()
+    try:
+        await save_orcid_search_by_affiliation_and_domain()
+    except Exception as e:
+        create_log('orcid').error(f"""
+                                    An error occurred while save_orcid_search_by_affiliation_and_domain() method was running
+                                    """)
+        create_log('orcid').error(str(e))
+        pass
 
     for person in persons:
         for alias in person['aliases']:
-            # wait a time before execute query for get_orcid_list_by_full_name
-            # sleep_time = randint(3, 5)
-            # print('sleep {0} seconds'.format(sleep_time))
-            # time.sleep(sleep_time)
-
+            
             first_name = person['name']
             split_at = len(first_name) + 1
             left, right = alias[:split_at], alias[split_at:]
-
-            await save_orcid_search_by_person(
-                person['_id'],
-                get_orcid_list_by_name_and_last_name(left, right),
-            )
+            
+            try:
+                await save_orcid_search_by_person(
+                   person['_id'],
+                   get_orcid_list_by_name_and_last_name(left, right),
+                )
+            except Exception as e:
+                create_log('orcid').error(f"""
+                                          An error occurred while get_orcid_list_by_name_and_last_name() method was running
+                                          params => person['id']: {person['_id']}, left: {left}, right: {right}
+                                          """)
+                create_log('orcid').error(str(e))
+                pass
+                
         orcid_list = await OrcidController.retrieve_one({"person_id": person['_id']})
 
         for orcid_item in orcid_list:
-
-            # wait a time before execute query for email orcid
-            # sleep_time = randint(5, 10)
-            # print('sleep {0} seconds'.format(sleep_time))
-            # time.sleep(sleep_time)
-
-            email_list = get_email_by_orcid(orcid_item['orcid_id'])
+            try:
+                email_list = get_email_by_orcid(orcid_item['orcid_id'])
+            except Exception as e:
+                create_log('orcid').error(f"""
+                                          An error occurred while get_email_by_orcid() method was running
+                                          params => orcid_item['orcid_id']: {orcid_item['orcid_id']}
+                                          """)
+                create_log('orcid').error(str(e))
+                pass
+                
             if email_list and person['email'] in email_list or orcid_item['full_name'] in person['aliases']:
                 await PersonsController.update_person(person['_id'], dict(orcid=orcid_item['orcid_id']))
                 print('UPDATE ORCID_ID BY PERSON EMAIL')

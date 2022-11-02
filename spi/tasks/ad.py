@@ -2,6 +2,7 @@ import ldap
 
 from spi.controllers import PersonsController, PidsController
 from spi.database import connect
+from spi.logger_base import create_log
 
 username = "edel.abreu"
 password = "%Me3.2018%"
@@ -26,9 +27,11 @@ def get_ldap_list_persons():
         ld.unbind_s()
         return results
     except ldap.INVALID_CREDENTIALS:
-        print("Your username or password is invalid.")
+        create_log('ad').error(f'INVALID_CREDENTIALS: {ldap.INVALID_CREDENTIALS}')
+        # print("Your username or password is invalid.")
     except Exception as e:
-        print("Connection unsuccessful: " + str(e))
+        create_log('ad').error(f"Connection unsuccessful: {str(e)}")
+        # print("Connection unsuccessful: " + str(e))
         ld.unbind_s()
         return []
 

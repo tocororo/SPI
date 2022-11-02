@@ -2,6 +2,7 @@ import json, csv, os, string, array
 
 from spi.controllers import PersonsController, PidsController
 from spi.database import connect
+from spi.logger_base import create_log
 
 ASSETS_JSONLD_PATH = str(os.getenv("ASSETS_JSONLD_PATH"))
 ASSETS_CSV_PATH = str(os.getenv("ASSETS_CSV_PATH"))
@@ -9,7 +10,7 @@ ASSETS_CSV_PATH = str(os.getenv("ASSETS_CSV_PATH"))
 def get_assets_from_csv():
     data_dict = {}
     dict_array_formated = []
-    if os.path.exists(ASSETS_CSV_PATH) and os.path.isfile(ASSETS_CSV_PATH) :
+    if os.path.exists(ASSETS_CSV_PATH) and os.path.isfile(ASSETS_CSV_PATH):
         with open(ASSETS_CSV_PATH, encoding = 'utf-8') as csv_file_handler:
             csv_reader = csv.DictReader(csv_file_handler)
             #convert each row into a dictionary and add the converted data to the data_variable
@@ -36,8 +37,11 @@ def get_assets_list_persons():
     
     if (len(assets_from_csv) > 0):
         persons_assets = assets_from_csv
-    else:
+    elif os.path.exists(ASSETS_CSV_PATH) and os.path.isfile(ASSETS_CSV_PATH):
+        create_log('assets').info('CSV file for assetss was not found, proceeding to use jsonld')
         persons_assets = assets_from_jsonld["hydra:member"]
+    else:
+        create_log('assets').warning('Neither a CSV or JSONLD file for assets was found')
         
     persons_assets_fixed = []
 
