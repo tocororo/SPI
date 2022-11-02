@@ -37,7 +37,7 @@ def get_assets_list_persons():
     
     if (len(assets_from_csv) > 0):
         persons_assets = assets_from_csv
-    elif os.path.exists(ASSETS_CSV_PATH) and os.path.isfile(ASSETS_CSV_PATH):
+    elif os.path.exists(ASSETS_JSONLD_PATH) and os.path.isfile(ASSETS_JSONLD_PATH):
         create_log('assets').info('CSV file for assetss was not found, proceeding to use jsonld')
         persons_assets = assets_from_jsonld["hydra:member"]
     else:
@@ -62,6 +62,7 @@ def get_assets_list_persons():
             gender=assets['sexo'].replace(" ", ""),
             country=assets['pais'].replace(" ", ""),
             email='',
+            orcid='',
             aliases=[name + ' ' + lastName]
             # active = ele.activo,
             # date_start = ele.start,
