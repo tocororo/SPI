@@ -113,16 +113,15 @@ async def save_orcid_search_by_person(person_id, orcid_list):
 
             existent_orcid_item = await OrcidController.retrieve_one({'orcid_id': orcid_item['orcid-id']})
             
-            if len(existent_orcid_item) > 0 and existent_orcid_item[0]:
-                item = existent_orcid_item[0]
-                id = item['_id']
+            if existent_orcid_item:
+                id = existent_orcid_item['_id']
                 print('UPDATE ORCID -> PERSON_ID')
                 print("=========================")
-                item.update({
+                existent_orcid_item.update({
                     "person_id": ObjectId(person_id)
                 })
-                del item['_id']
-                await OrcidController.update(id, item)
+                del existent_orcid_item['_id']
+                await OrcidController.update(id, existent_orcid_item)
             else:
                 print('INSERT ORCID PERSON')
                 print("=========================")
@@ -141,13 +140,12 @@ async def save_orcid_search_by_affiliation_and_domain():
 
             existent_orcid_item = await OrcidController.retrieve_one({'orcid_id': orcid_item['orcid-id']})
             
-            if len(existent_orcid_item) > 0 and existent_orcid_item[0]:
-                item = existent_orcid_item[0]
-                id = item['_id']
+            if existent_orcid_item:
+                id = existent_orcid_item['_id']
                 print('UPDATE ORCID -> EXISTENt ORCID_ID')
                 print("=========================")
-                del item['_id']
-                await OrcidController.update(id, item)                
+                del existent_orcid_item['_id']
+                await OrcidController.update(id, existent_orcid_item)                
             else:    
                 print('INSERT ORCID PERSON')
                 print("=========================")
@@ -192,7 +190,7 @@ async def get_orcid_list():
                 create_log('orcid').error(str(e))
                 pass
                 
-        orcid_list = await OrcidController.retrieve_one({"person_id": person['_id']})
+        orcid_list = await OrcidController.retrieve_by({"person_id": person['_id']})
 
         for orcid_item in orcid_list:
             try:

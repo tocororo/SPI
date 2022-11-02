@@ -3,7 +3,7 @@ from bson.objectid import ObjectId
 
 from spi.database import get_persons_collection, get_pids_collection, get_orcid_collection
 from spi.handlers import orcid_helper, person_helper, person_search_helper, pids_helper
-from spi.models import PersonSchema, PidsSchema, error_response_model
+from spi.models import PersonSchema, PidsSchema, OrcidSchema
 
 
 """Controller for Persons 
@@ -80,9 +80,9 @@ class PersonsController():
             if person:
                 return person_helper(person)
             else:
-                return {}
+                return person
         else:
-            return {}
+            return pids
 
 
 """Controller for PIDS
@@ -122,6 +122,8 @@ class PidsController():
         pids = await pids_collection.find_one(obj)
         if pids:
             return pids_helper(pids)
+        else:
+            return pids
 
 
 """Controller for Orcid
@@ -137,7 +139,26 @@ class OrcidController():
         async for orcid in orcid_collection.find():
             orcid_list.append(orcid_helper(orcid))
         return orcid_list
-
+    
+    
+    @staticmethod
+    async def retrieve_by(obj: dict):
+        orcid_collection = await get_orcid_collection()
+        orcid_list = []
+        async for orcid in orcid_collection.find(obj):
+            orcid_list.append(orcid_helper(orcid))
+        return orcid_list
+    
+    
+    # Retrieve a orcid with a matching statement
+    @staticmethod
+    async def retrieve_one(obj: dict) -> OrcidSchema:
+        orcid_collection = await get_orcid_collection()
+        orcid = await orcid_collection.find_one(obj)
+        if orcid:
+            return orcid_helper(orcid)
+        else:
+            return orcid
 
     # Add a new pids into to the database
     @staticmethod
