@@ -34,3 +34,13 @@ async def get_one(idExpediente: str):
     else:
         return error_response_model('not Found', 404, "Pids not found")
 
+@router.get("/person_search")
+async def get_one(id: str):
+    person = await PersonsController.retrieve_person_search(id)
+    if person:
+        return Response(code=200, status="Ok", message="Success retrieve data", result=person).dict(
+            exclude_none=True
+            )
+    else:
+        return error_response_model('not Found', 404, "Person not found")
+
