@@ -4,9 +4,10 @@ def create_log(file_name):
     logger = logging
     file_name_path = f'temp/logs/{file_name}.log'
     os.makedirs(os.path.dirname(file_name_path), exist_ok=True)
-    logger.basicConfig(level=logging.DEBUG,
+    logger.basicConfig(
+                    level=logging.DEBUG,
                     format='%(asctime)s: %(levelname)s [%(filename)s:%(lineno)s] %(message)s',
-                    datefmt='%I:%M:%S %p',
+                    datefmt='%Y-%m-%d | %I:%M:%S %p',
                     handlers=[
                         logging.FileHandler(file_name_path),
                         logging.StreamHandler()
