@@ -2,7 +2,7 @@ from unittest import result
 from bson.objectid import ObjectId
 
 from spi.database import get_persons_collection, get_pids_collection, get_orcid_collection
-from spi.handlers import orcid_helper, person_helper, person_search_helper, pids_helper
+from spi.helpers import orcid_helper, person_helper, person_search_helper, pids_helper
 from spi.models import PersonSchema, PidsSchema, OrcidSchema
 
 
