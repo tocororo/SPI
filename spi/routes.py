@@ -13,10 +13,7 @@ def make_request(url: str = '', headers: dict = {}, params: dict = {}):
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('http://', adapter)
     session.mount('https://', adapter)
-    req = requests.Request(url=url, headers=headers, params=params)
-    prepped = session.prepare_request(req)
-    prepped.headers['Content-Length'] = 99999
-    response = session.get(prepped)
+    response = session.get(url, headers=headers, params=params)
     return response
 
 @router.get("/persons")
