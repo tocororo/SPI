@@ -14,5 +14,5 @@
 1. In order to run the server open your terminal and excecute from the spi root folder ``python main.py``. The server will run in the ***IP and PORT*** provided in the .env file ***(API_HOST and API_PORT)***
 2. Routes available:
    * ``/persons`` will provide a list of all the persons
-   * ``/person?idExpediente="..."`` will provide a person that correspond with that ***idExpediente***
+   * ``/person?idExpediente="..."`` will provide a person that match with that ***idExpediente***
    * ``/person_search?id="..."`` will provide a person with a field ***search_results***, this field contains a list of persons that orcid consider can be a scpecific person
