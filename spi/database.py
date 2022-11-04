@@ -2,8 +2,8 @@ import os
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
-MONGO_DB = str(os.getenv("MONGO_DB"))
-MONGO_URI = str(os.getenv("MONGO_URI"))
+MONGO_DB = os.getenv("MONGO_DB")
+MONGO_URI = os.getenv("MONGO_URI")
 MONGO_MAX_CONNECTIONS = int(os.getenv("MAX_CONNECTIONS_COUNT", 10))
 MONGO_MIN_CONNECTIONS = int(os.getenv("MIN_CONNECTIONS_COUNT", 10))
 

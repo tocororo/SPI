@@ -4,8 +4,8 @@ from spi.controllers import PersonsController, PidsController
 from spi.database import connect
 from spi.logger_base import create_log
 
-ASSETS_JSONLD_PATH = str(os.getenv("ASSETS_JSONLD_PATH"))
-ASSETS_CSV_PATH = str(os.getenv("ASSETS_CSV_PATH"))
+ASSETS_JSONLD_PATH = os.getenv("ASSETS_JSONLD_PATH")
+ASSETS_CSV_PATH = os.getenv("ASSETS_CSV_PATH")
 
 def get_assets_from_csv():
     data_dict = {}

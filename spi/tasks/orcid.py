@@ -8,8 +8,8 @@ from spi.controllers import OrcidController
 from spi.logger_base import create_log
 from spi.routes import make_request
 
-ORCID_API = str(os.getenv("ORCID_API"))
-ASSETS_JSON_TMP = str(os.getenv("ASSETS_JSON_TMP"))
+ORCID_API = os.getenv("ORCID_API")
+ASSETS_JSON_TMP = os.getenv("ASSETS_JSON_TMP")
 
 
 def get_orcid_list_by_name_and_last_name(given_names: str = '', family_name: str = '') -> list:

@@ -1,15 +1,16 @@
-import ldap
+import ldap, os
 
 from spi.controllers import PersonsController, PidsController
 from spi.database import connect
 from spi.logger_base import create_log
 
-username = "edel.abreu"
-password = "%Me3.2018%"
+username = os.getenv('LDAP_USERNAME')
+password = os.getenv('LDAP_PASSWORD')
+ldap_server = os.getenv('LDAP_SERVER')
+email_domain = os.getenv('EMAIL_DOMAIN')
 
-ldap_server = "ldap://ad.upr.edu.cu"
 base_dn = "OU=_Usuarios,DC=upr,DC=edu,DC=cu"
-user_dn = username + "@upr.edu.cu"
+user_dn = username + email_domain
 search_filter = "(&(objectClass=user)(sAMAccountName=" + username + "))"
 
 ld = ldap.initialize(ldap_server);
