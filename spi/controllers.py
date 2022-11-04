@@ -40,7 +40,7 @@ class PersonsController():
                 }
             },
         ]):
-            persons.append({'_id': person['_id'], 'search_results': person['search_results']})
+            persons.append({'_id': ObjectId(person['_id']), 'search_results': person['search_results']})
 
         result = next((item for item in persons if item["_id"] == id), {})
         return person_search_helper(result)

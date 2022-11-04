@@ -184,7 +184,7 @@ async def get_orcid_list():
                 create_log('orcid').error(str(e))
                 pass
                 
-        orcid_list = await OrcidController.retrieve_by({"person_id": person['_id']})
+        orcid_list = await OrcidController.retrieve_by({"person_id": ObjectId(person['_id'])})
 
         for orcid_item in orcid_list:
             try:
