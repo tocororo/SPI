@@ -113,7 +113,7 @@ async def save_orcid_search_by_person(person_id, orcid_list):
 
             existent_orcid_item = await OrcidController.retrieve_one({'orcid_id': orcid_item['orcid-id']})
             
-            if existent_orcid_item:
+            if existent_orcid_item and not existent_orcid_item[person_id]:
                 id = existent_orcid_item['_id']
                 print('UPDATE ORCID -> PERSON_ID')
                 print("=========================")
@@ -140,13 +140,7 @@ async def save_orcid_search_by_affiliation_and_domain():
 
             existent_orcid_item = await OrcidController.retrieve_one({'orcid_id': orcid_item['orcid-id']})
             
-            if existent_orcid_item:
-                id = existent_orcid_item['_id']
-                print('UPDATE ORCID -> EXISTENt ORCID_ID')
-                print("=========================")
-                del existent_orcid_item['_id']
-                await OrcidController.update(id, existent_orcid_item)                
-            else:    
+            if not existent_orcid_item:                
                 print('INSERT ORCID PERSON')
                 print("=========================")
                 new_orcid_item = {
