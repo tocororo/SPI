@@ -102,18 +102,9 @@ async def save_orcid_search_by_person(person_id, orcid_list):
         for orcid_item in orcid_list:
             full_name = normalize_full_name_orcid(orcid_item)
 
-            # if orcid_item and 'given-names' in orcid_item.keys() and 'family-names' in orcid_item.keys():
-            # given_names = orcid_item['given-names'] if orcid_item['given-names'] else ''
-            # family_names = orcid_item['family-names'] if orcid_item['family-names'] else ''
-
-            # orcid_full_name = given_names + ' ' + family_names
-            # ldap_displayName = entry['displayName'][0].decode("utf-8")
-
-            # if orcid_item['orcid-id'] not in orcid_list_cleaned and orcid_full_name == ldap_displayName:
-
             existent_orcid_item = await OrcidController.retrieve_one({'orcid_id': orcid_item['orcid-id']})
             
-            if existent_orcid_item and not existent_orcid_item[person_id]:
+            if existent_orcid_item and not existent_orcid_item['person_id']:
                 id = existent_orcid_item['_id']
                 print('UPDATE ORCID -> PERSON_ID')
                 print("=========================")
@@ -138,19 +129,18 @@ async def save_orcid_search_by_affiliation_and_domain():
         for orcid_item in orcid_list_by_affiliation_and_domain:
             full_name = normalize_full_name_orcid(orcid_item)
 
-            existent_orcid_item = await OrcidController.retrieve_one({'orcid_id': orcid_item['orcid-id']})
+            person = await PersonsController.retrieve_one({ "aliases": { "$in" : [full_name]} })
             
-            if not existent_orcid_item:                
-                print('INSERT ORCID PERSON')
-                print("=========================")
-                new_orcid_item = {
-                    "orcid-id": orcid_item['orcid-id'],
-                    "given-names": orcid_item['given-names'],
-                    "family-names": orcid_item['family-names'],
-                    "full_name": full_name,
-                    "person_id":''
-                }
-                await OrcidController.insert(new_orcid_item)
+            print('INSERT ORCID PERSON')
+            print("=========================")
+            new_orcid_item = {
+                "orcid-id": orcid_item['orcid-id'],
+                "given-names": orcid_item['given-names'],
+                "family-names": orcid_item['family-names'],
+                "full_name": full_name,
+                "person_id": ObjectId(person['_id'])
+            }
+            await OrcidController.insert(new_orcid_item)
 
 
 async def get_orcid_list():
