@@ -129,18 +129,20 @@ async def save_orcid_search_by_affiliation_and_domain():
         for orcid_item in orcid_list_by_affiliation_and_domain:
             full_name = normalize_full_name_orcid(orcid_item)
 
-            person = await PersonsController.retrieve_one({ "aliases": { "$in" : [full_name]} })
+            exist_orcid = await OrcidController.retrieve_one({ "orcid_id": orcid_item['orcid_id'] })
             
-            print('INSERT ORCID PERSON')
-            print("=========================")
-            new_orcid_item = {
-                "orcid-id": orcid_item['orcid-id'],
-                "given-names": orcid_item['given-names'],
-                "family-names": orcid_item['family-names'],
-                "full_name": full_name,
-                "person_id": ObjectId(person['_id'])
-            }
-            await OrcidController.insert(new_orcid_item)
+            if not exist_orcid:
+                person = await PersonsController.retrieve_one({ "aliases": { "$in" : [full_name]} })
+                print('INSERT ORCID PERSON')
+                print("=========================")
+                new_orcid_item = {
+                    "orcid-id": orcid_item['orcid-id'],
+                    "given-names": orcid_item['given-names'],
+                    "family-names": orcid_item['family-names'],
+                    "full_name": full_name,
+                    "person_id": ObjectId(person['_id'])
+                }
+                await OrcidController.insert(new_orcid_item)
 
 
 async def get_orcid_list():
@@ -155,43 +157,44 @@ async def get_orcid_list():
         pass
 
     for person in persons:
-        for alias in person['aliases']:
-            
-            first_name = person['name']
-            split_at = len(first_name) + 1
-            left, right = alias[:split_at], alias[split_at:]
-            
-            try:
-                await save_orcid_search_by_person(
-                   person['_id'],
-                   get_orcid_list_by_name_and_last_name(left, right),
-                )
-            except Exception as e:
-                create_log('orcid').error(f"""
-                                          An error occurred while get_orcid_list_by_name_and_last_name() method was running
-                                          params => person['id']: {person['_id']}, left: {left}, right: {right}
-                                          """)
-                create_log('orcid').error(str(e))
-                pass
+        if not person['orcid']:
+            for alias in person['aliases']:
                 
-        orcid_list = await OrcidController.retrieve_by({"person_id": ObjectId(person['_id'])})
+                first_name = person['name']
+                split_at = len(first_name) + 1
+                left, right = alias[:split_at], alias[split_at:]
+                
+                try:
+                    await save_orcid_search_by_person(
+                    person['_id'],
+                    get_orcid_list_by_name_and_last_name(left, right),
+                    )
+                except Exception as e:
+                    create_log('orcid').error(f"""
+                                            An error occurred while get_orcid_list_by_name_and_last_name() method was running
+                                            params => person['id']: {person['_id']}, left: {left}, right: {right}
+                                            """)
+                    create_log('orcid').error(str(e))
+                    pass
+                    
+            orcid_list = await OrcidController.retrieve_by({"person_id": ObjectId(person['_id'])})
 
-        for orcid_item in orcid_list:
-            try:
-                email_list = get_email_by_orcid(orcid_item['orcid_id'])
-            except Exception as e:
-                create_log('orcid').error(f"""
-                                          An error occurred while get_email_by_orcid() method was running
-                                          params => orcid_item['orcid_id']: {orcid_item['orcid_id']}
-                                          """)
-                create_log('orcid').error(str(e))
-                pass
-                
-            if email_list and person['email'] in email_list or orcid_item['full_name'] in person['aliases']:
-                await PersonsController.update_person(person['_id'], dict(orcid=orcid_item['orcid_id']))
-                print('UPDATE ORCID_ID BY PERSON EMAIL')
-                print("=========================")
-                break
+            for orcid_item in orcid_list:
+                try:
+                    email_list = get_email_by_orcid(orcid_item['orcid_id'])
+                except Exception as e:
+                    create_log('orcid').error(f"""
+                                            An error occurred while get_email_by_orcid() method was running
+                                            params => orcid_item['orcid_id']: {orcid_item['orcid_id']}
+                                            """)
+                    create_log('orcid').error(str(e))
+                    pass
+                    
+                if email_list and person['email'] in email_list or orcid_item['full_name'] in person['aliases']:
+                    await PersonsController.update_person(person['_id'], dict(orcid=orcid_item['orcid_id']))
+                    print('UPDATE ORCID_ID BY PERSON EMAIL')
+                    print("=========================")
+                    break
 
 
 if __name__ == '__main__':
