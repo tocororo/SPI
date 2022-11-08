@@ -1,4 +1,13 @@
 import logging,os
+from pytz import timezone
+from datetime import datetime
+
+def timetz(*args):
+    return datetime.now(tz).timetuple()
+
+tz = timezone('Cuba')
+
+logging.Formatter.converter = timetz 
 
 def create_log(file_name):
     logger = logging
@@ -7,7 +16,7 @@ def create_log(file_name):
     logger.basicConfig(
                     level=logging.DEBUG,
                     format='%(asctime)s: %(levelname)s [%(filename)s:%(lineno)s] %(message)s',
-                    datefmt='%Y-%m-%d | %I:%M:%S %p',
+                    datefmt="%Y-%m-%d %H:%M:%S",
                     handlers=[
                         logging.FileHandler(file_name_path),
                         logging.StreamHandler()
