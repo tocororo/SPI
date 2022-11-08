@@ -31,7 +31,9 @@ class PersonSchema(BaseModel):
     gender: str
     country: str
     email: EmailStr
+    orcid: str
     aliases: list
+    orcid_search: list
     affiliations: list
     subaffiliations: list
     active: bool
@@ -43,4 +45,12 @@ class PidsSchema(BaseModel):
     _id: ObjectId()
     idtype: str
     idvalue: str
-    #todo considerar campo source para conocer la fuente del identificador ( puede coincidir con el type )
+    # todo: considerar campo source para conocer la fuente del identificador ( puede coincidir con el type )
+
+class OrcidSchema(BaseModel):
+    _id: ObjectId()
+    orcid_id: str
+    given_names: str
+    family_names: str
+    full_name: str
+    person_id: str
