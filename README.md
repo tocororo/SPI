@@ -8,13 +8,15 @@
 
 ## Steps to create a collection of persons
 
-1. Open you terminal ``pip install -e .``
-2. Create a file ***.env***  with the content of ***template.env*** and modify where is needed.
-3. The script ***assets*** needs to have a directory data with a ***file_name.json*** or ***file_name.csv***. This paths needs to be modified in ***.env*** file (if names or values dont match).
-4. In order of obtain a list of persosns from your assets directory ***file_name.json or file_name.csv***, excecute from the spi root folder ``python spi/tasks/assets.py``.
-   * If you need to update the ***email*** for every person in that list whith the ldap protocol of your institution, excecute from the spi root folder ``python spi/tasks/ad.py``.
-   * If you need to update the ***orcid*** for every person in that list drectly from ***ORCID API***, excecute from the spi root folder ``python spi/tasks/orcid.py``.
-5. In order to export the persons collection in a JSON format write in a terminal 
+1. You need to have MongoDB server running somewhere.
+2. Create a file ***.env***  with the content of ***template.env***.
+3. Modify the ***database configs*** in ***.env*** file if needed.
+4. Open you terminal ``pip install -e .``
+5. The script ***assets*** needs to have a directory data with a ***file_name.json*** or ***file_name.csv***. This paths needs to be modified in ***.env*** file (if names or directories dont match).
+6. In order of obtain a list of persosns from your assets directory ***file_name.json or file_name.csv***, excecute from the spi root folder ``python spi/tasks/assets.py``.
+   * If you need to update the ***email*** for every person in that list whith the ldap protocol of your institution, first update the ***ldap configs*** in your ***.env*** file and then excecute from the spi root folder ``python spi/tasks/ad.py``.
+   * If you need to update the ***orcid*** for every person in the assets list drectly from ***ORCID API***, excecute from the spi root folder ``python spi/tasks/orcid.py``.
+7. In order to export the persons collection in a JSON format write in a terminal 
    > For local: ``mongoexport --db="database_name" --collection=persons --out=data/persons.json``, this command will export the collection to the mongodb ***data*** folder.
    > For remote: ``mongoexport uri="database_uri" --db="database_name" --collection=persons --out=data/persons.json``, this command will export the collection to the mongodb ***data*** folder.
 
