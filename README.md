@@ -1,5 +1,9 @@
 # System of Persons Identification (SPI)
 
+[![MongoDB](https://img.shields.io/badge/MongoDB-%2014-gren.svg?style=flat)](https://www.mongodb.com/)
+[![Python](https://img.shields.io/badge/Python-%20>=%203.8-blue.svg?style=flat)](https://www.python.org/downloads/)
+[![FasApi](https://img.shields.io/badge/FasApi-%20>=%200.79.1-teal.svg?style=flat)](https://fastapi.tiangolo.com/)
+
 >**This project it's part of a process, to create a database that contains the information of every person afiliated to some cuban universities and then to be used or to be consulted by the app [personas](https://personas.sceiba.cu/)**.
 
 ## Steps to create a collection of persons
