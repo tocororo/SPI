@@ -43,7 +43,7 @@ async def save_ldap_list_persons(ldap_persons):
         # check for the employeeID and get the person
         if entry and 'employeeID' in entry.keys():
             employeeID = entry['employeeID'][0].decode("utf-8")
-            person = await PersonsController.retrieve_one({"idvalue": employeeID})
+            person = await PersonsController.retrieve_one_by_pid({"idvalue": employeeID})
 
             # check for the employeeID and update the person's aliases
             if person and entry and 'displayName' in entry.keys():
@@ -53,7 +53,7 @@ async def save_ldap_list_persons(ldap_persons):
                     aliases += [entry['displayName'][0].decode("utf-8")]
                     await PersonsController.update_person(
                         person['_id'],
-                        dict(aliases=aliases)
+                        {"$set": dict(aliases=aliases)}
                     )
                     print('update aliases')
                     print("=========================")
@@ -62,14 +62,16 @@ async def save_ldap_list_persons(ldap_persons):
             if entry and 'mail' in entry.keys():
                 employeeID = entry['employeeID'][0].decode("utf-8")
                 mail = entry['mail'][0].decode("utf-8")
-                pids = await PidsController.retrieve_one({"idvalue": employeeID})
-                if pids:
-                    await PersonsController.update_person(
-                        pids['person_id'],
-                        dict(email=mail)
-                    )
-                    print('update email')
-                    print("=========================")
+                institutional_email = await PersonsController.retrieve_one({'institutional_email': mail})
+                if not institutional_email:
+                    pids = await PidsController.retrieve_one({"idvalue": employeeID})
+                    if pids:
+                        await PersonsController.update_person(
+                            pids['person_id'],
+                            {"$set": dict(institutional_email=mail)}
+                        )
+                        print('update email')
+                        print("=========================")
 
 
 if __name__ == '__main__':

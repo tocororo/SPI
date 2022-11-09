@@ -58,20 +58,20 @@ class PersonsController():
 
     # Update a student with a matching ID
     @staticmethod
-    async def update_person(_id: str, data: dict):
+    async def update_person(_id: str, query: dict):
         # Return false if an empty request body is sent.
-        if len(data) < 1:
+        if len(query) < 1:
             return False
         else:
             person_collection = await get_persons_collection()
             await person_collection.update_one(
-                {"_id": ObjectId(_id)}, {"$set": data}
+                {"_id": ObjectId(_id)}, query
             )
 
 
     # Retrieve a person with a matching ID
     @staticmethod
-    async def retrieve_one(obj: dict) -> PersonSchema:
+    async def retrieve_one_by_pid(obj: dict) -> PersonSchema:
         person_collection = await get_persons_collection()
         pids_collection = await get_pids_collection()
         pids = await pids_collection.find_one(obj)
@@ -83,6 +83,15 @@ class PersonsController():
                 return person
         else:
             return pids
+        
+    @staticmethod
+    async def retrieve_one(obj: dict) -> PidsSchema:
+        persons_collection = await get_persons_collection()
+        person = await persons_collection.find_one(obj)
+        if person:
+            return person_helper(person)
+        else:
+            return person
 
 
 """Controller for PIDS
@@ -94,7 +103,7 @@ class PidsController():
 
     # Retrieve all pidss present in the database
     @staticmethod
-    async def retrieve():
+    async def retrieve() -> PidsSchema:
         pids_collection = await get_pids_collection()
         pidss = []
         async for pids in pids_collection.find():
@@ -113,6 +122,12 @@ class PidsController():
                 idvalue=_identifier['idvalue']
             )
             await pids_collection.insert_one(new_pid)
+            
+    # Add a new pids into to the database
+    @staticmethod
+    async def insert_one(pid: dict):
+        pids_collection = await get_pids_collection()
+        await pids_collection.insert_one(pid)
 
 
     # Retrieve a pids with a matching noCI
@@ -133,7 +148,7 @@ Returns:
 """
 class OrcidController():
     @staticmethod
-    async def retrieve():
+    async def retrieve() -> OrcidSchema:
         orcid_collection = await get_orcid_collection()
         orcid_list = []
         async for orcid in orcid_collection.find():
@@ -142,7 +157,7 @@ class OrcidController():
     
     
     @staticmethod
-    async def retrieve_by(obj: dict):
+    async def retrieve_by(obj: dict) -> OrcidSchema:
         orcid_collection = await get_orcid_collection()
         orcid_list = []
         async for orcid in orcid_collection.find(obj):
@@ -176,14 +191,14 @@ class OrcidController():
 
     # Update a student with a matching ID
     @staticmethod
-    async def update(_id: str, data: dict):
+    async def update(_id: str, query: dict):
         # Return false if an empty request body is sent.
-        if len(data) < 1:
+        if len(query) < 1:
             return False
         else:
             orcid_collection = await get_orcid_collection()
             await orcid_collection.update_one(
-                {"_id": ObjectId(_id)}, {"$set": data}
+                {"_id": ObjectId(_id)}, query
             )
 
 
@@ -192,4 +207,4 @@ if __name__ == '__main__':
     from spi.database import connect
 
     asyncio.run(connect())
-    asyncio.run(PersonsController.retrieve_person_search('635abfb8aeb90faac17b110f'))
+    # asyncio.run(PersonsController.retrieve_person_search('635abfb8aeb90faac17b110f'))
