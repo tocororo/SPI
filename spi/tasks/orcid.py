@@ -164,6 +164,7 @@ async def save_orcid_search_by_affiliation_and_domain():
 
 async def get_orcid_list():
     persons = await PersonsController.retrieve()
+    count = 0
     try:
         await save_orcid_search_by_affiliation_and_domain()
     except Exception as e:
@@ -174,6 +175,13 @@ async def get_orcid_list():
         pass
 
     for person in persons:
+        count += 1
+        create_log('orcid').info(f"""
+                                    current person _id: {person['_id']}
+                                    current person name: {person['name']} {person['lastName']}                                    
+                                    {count} persons checked of {len(person)}
+                                    
+                                 """)
         pid = await PidsController.retrieve_one({'person_id': person['_id'], 'idtype': 'orcid', 'idvalue': {'$ne': ''}})
         if not pid:
             for alias in person['aliases']:
