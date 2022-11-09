@@ -30,8 +30,8 @@ class PersonSchema(BaseModel):
     lastName: str
     gender: str
     country: str
-    email: EmailStr
-    orcid: str
+    institutional_email: EmailStr
+    emails: List[EmailStr]
     aliases: list
     orcid_search: list
     affiliations: list
