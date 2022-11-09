@@ -46,11 +46,17 @@ def get_assets_list_persons():
     persons_assets_fixed = []
 
     for assets in persons_assets:
-        _identifiers = [
-            # {'idtype': 'userName', 'idvalue': assets['idUser']},
-            {'idtype': 'idExpediente', 'idvalue': assets['idExpediente'].replace(" ", "")},
-            {'idtype': 'noCi', 'idvalue': assets['noCi'].replace(" ", "")}
-        ]
+        if assets['orcid']:
+            _identifiers = [
+                {'idtype': 'idExpediente', 'idvalue': assets['idExpediente'].replace(" ", "")},
+                {'idtype': 'noCi', 'idvalue': assets['noCi'].replace(" ", "")},
+                {'idtype': 'orcid', 'idvalue': assets['orcid'].replace(" ", "")}
+            ]
+        else:
+            _identifiers = [
+                {'idtype': 'idExpediente', 'idvalue': assets['idExpediente'].replace(" ", "")},
+                {'idtype': 'noCi', 'idvalue': assets['noCi'].replace(" ", "")},
+            ]
         name = string.capwords(assets['nombre'])
         lastName = string.capwords(assets['apellido1']) + ' ' + string.capwords(assets['apellido2'])
 
@@ -61,8 +67,8 @@ def get_assets_list_persons():
             lastName=lastName,
             gender=assets['sexo'].replace(" ", ""),
             country=assets['pais'].replace(" ", ""),
-            email='',
-            orcid='',
+            institutional_email=assets['institutional_email'],
+            emails=assets['emails'] or [],
             aliases=[name + ' ' + lastName]
             # active = ele.activo,
             # date_start = ele.start,
@@ -85,7 +91,7 @@ async def save_assets_list_persons():
             if pids:
                 print("UPDATE ONE")
                 print("=========================")
-                await PersonsController.update_person(pids['person_id'], person)
+                await PersonsController.update_person(pids['person_id'], {"$set": person})
                 can_insert = False
                 break
         if can_insert:
