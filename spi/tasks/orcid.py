@@ -101,7 +101,7 @@ async def insert_orcid_identifier(person_id, orcid_id) :
     print("=========================")
     await PersonsController.update_person(
         person_id, 
-        {'$push': {'identifiers': dict(idtype='orcid', idvalue=orcid_id)}}
+        {'$push': {'identifiers':{'idtype': 'orcid', 'idvalue': orcid_id}}}
     )
     await PidsController.insert_one(
         dict(
@@ -179,10 +179,10 @@ async def get_orcid_list():
         create_log('orcid').info(f"""
                                     current person _id: {person['_id']}
                                     current person name: {person['name']} {person['lastName']}                                    
-                                    {count} persons checked of {len(person)}
+                                    {count} persons checked of {len(persons)}
                                     
                                  """)
-        pid = await PidsController.retrieve_one({'person_id': person['_id'], 'idtype': 'orcid', 'idvalue': {'$ne': ''}})
+        pid = await PidsController.retrieve_one({'person_id': ObjectId(person['_id']), 'idtype': 'orcid', 'idvalue': {'$ne': ''}})
         if not pid:
             for alias in person['aliases']:
                 
@@ -217,14 +217,14 @@ async def get_orcid_list():
                     pass
                 
                     
-                if email_list and person['institutional_email'] in email_list:
+                # if email_list and person['institutional_email'] in email_list:
+                #     await insert_orcid_identifier(person['_id'], orcid_item['orcid_id'])
+                #     for item in email_list:
+                #         if item not in person['emails']:
+                #             await PersonsController.update_person(person['_id'], {'$push':{'emails': item}})
+                #     break
+                if orcid_item['full_name'] in person['aliases']:
                     await insert_orcid_identifier(person['_id'], orcid_item['orcid_id'])
-                    for item in email_list:
-                        if item not in person['emails']:
-                            await PersonsController.update_person(person['_id'], {'$push':{'emails': item}})
-                    break
-                elif orcid_item['full_name'] in person['aliases']:
-                    insert_orcid_identifier(person['_id'], orcid_item['orcid_id'])
                     break
 
 
