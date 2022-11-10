@@ -217,13 +217,13 @@ async def get_orcid_list():
                     pass
                 
                     
-                # if email_list and person['institutional_email'] in email_list:
-                #     await insert_orcid_identifier(person['_id'], orcid_item['orcid_id'])
-                #     for item in email_list:
-                #         if item not in person['emails']:
-                #             await PersonsController.update_person(person['_id'], {'$push':{'emails': item}})
-                #     break
-                if orcid_item['full_name'] in person['aliases']:
+                if email_list and person['institutional_email'] in email_list:
+                    await insert_orcid_identifier(person['_id'], orcid_item['orcid_id'])
+                    for item in email_list:
+                        if item not in person['emails']:
+                            await PersonsController.update_person(person['_id'], {'$push':{'emails': item}})
+                    break
+                elif orcid_item['full_name'] in person['aliases']:
                     await insert_orcid_identifier(person['_id'], orcid_item['orcid_id'])
                     break
 
