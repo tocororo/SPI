@@ -97,7 +97,10 @@ def normalize_full_name_orcid(orcid_item) -> str:
     
     
 async def insert_orcid_identifier(person_id, orcid_id) :
-    print('UPDATE ORCID_ID BY PERSON EMAIL')
+    create_log('orcid').info(f"""
+                                    current person _id: {person_id}
+                                    UPDATE ORCID_ID BY PERSON EMAIL'                                   
+                                 """)
     print("=========================")
     await PersonsController.update_person(
         person_id, 
