@@ -7,6 +7,8 @@ from spi.logger_base import create_log
 ASSETS_JSONLD_PATH = os.getenv("ASSETS_JSONLD_PATH")
 ASSETS_CSV_PATH = os.getenv("ASSETS_CSV_PATH")
 
+CURRENT_ORG = os.getenv("CURRENT_ORG")
+
 def get_assets_from_csv():
     data_dict = {}
     dict_array_formated = []
@@ -34,7 +36,9 @@ def get_assets_list_persons():
     assets_from_jsonld = json.loads(file.read())    
     assets_from_csv = get_assets_from_csv()
     persons_assets = []
-    
+    assets_config_file = open(f'spi/assets_configs/{CURRENT_ORG}.json', "r")
+    assets_config = json.loads(assets_config_file.read())   
+    print(assets_config)
     if (len(assets_from_csv) > 0):
         persons_assets = assets_from_csv
     elif os.path.exists(ASSETS_JSONLD_PATH) and os.path.isfile(ASSETS_JSONLD_PATH):
