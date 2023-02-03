@@ -1,4 +1,5 @@
 import ldap, os
+from ldap.controls import SimplePagedResultsControl
 
 from spi.controllers import PersonsController, PidsController
 from spi.database import connect
@@ -13,28 +14,40 @@ base_dn = "OU=_Usuarios,DC=upr,DC=edu,DC=cu"
 user_dn = username + email_domain
 search_filter = "(&(objectClass=user)(sAMAccountName=" + username + "))"
 
-ld = ldap.initialize(ldap_server);
-ld.protocol_version = 3
-ld.set_option(ldap.OPT_REFERRALS, 0)
+ad = ldap.initialize(ldap_server);
+ad.protocol_version = 3
+ad.set_option(ldap.OPT_REFERRALS, 0)
+
+# ldap serverctrls
+COOKIE = ''
+PAGE_SIZE = 100000
+CRITICALITY = True
+pg_ctrl = SimplePagedResultsControl(CRITICALITY, PAGE_SIZE, COOKIE)
 
 
 # get list of persons from ldap protocol
 def get_ldap_list_persons():
+    results = []
+    first_pass = True
+    # search_filter = f'(cn={name}*)'
+    # search_filter_fields = []
+
     try:
         # print(ld.simple_bind_s(user_dn, password))
-        ld.simple_bind_s(user_dn, password)
-        # results = ld.search_s(base_dn, ldap.SCOPE_SUBTREE, search_filter)
-        results = ld.search_s(base_dn, ldap.SCOPE_SUBTREE)
-        ld.unbind_s()
-        return results
+        ad.simple_bind_s(user_dn, password)
+        # results = ld.search_s(base_dn, ldap.SCOPE_SUBTREE, search_filter, search_filter_fields)
+        results = ad.search_ext_s(base_dn, ldap.SCOPE_SUBTREE, filterstr='(objectClass=*)', serverctrls=[pg_ctrl])
+        ad.unbind_s()
     except ldap.INVALID_CREDENTIALS:
         create_log('ad').error(f'INVALID_CREDENTIALS: {ldap.INVALID_CREDENTIALS}')
         # print("Your username or password is invalid.")
     except Exception as e:
         create_log('ad').error(f"Connection unsuccessful: {str(e)}")
         # print("Connection unsuccessful: " + str(e))
-        ld.unbind_s()
-        return []
+        ad.unbind_s()
+        
+    # print(results)
+    return results
 
 
 # save persons from ldap protocol to DB
@@ -79,20 +92,5 @@ if __name__ == '__main__':
 
     asyncio.run(connect())
 
-    # results = get_ldap_list_persons()
-    list = get_ldap_list_persons()
-    asyncio.run(save_ldap_list_persons(list))
-
-    #print(results) 
-
-    # for dn, entry in results:
-    # print(entry['displayName'][0].decode("utf-8"))
-
-    # for dn, entry in results:
-    # print('Processing', repr(entry))
-    # f = open("demofile3.json", "a")
-    # f.write(str(entry))
-    # f.close()
-    # if entry and 'mail' in entry.keys() and 'employeeID' in entry.keys() and entry['employeeID'] === CI:
-    #     print(entry['mail'])
-    # break
+    results = get_ldap_list_persons()
+    asyncio.run(save_ldap_list_persons(results))
