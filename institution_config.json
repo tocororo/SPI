@@ -1,0 +1,29 @@
+{
+  "url": "http://apiassets.upr.edu.cu/",
+  "slug": "",
+  "params": [
+    {
+      "key": "_format",
+      "value": "json"
+    },
+    {
+      "key": "itemsPerPage",
+      "value": "500"
+    },
+    {
+      "key": "page",
+      "value": "1"
+    }
+  ],
+  "keys": {
+    "identifiers": ["idExpediente", "noCi", "orcid"],
+    "nombre": "nombre",
+    "lastName": "lastName",
+    "apellido1": "apellido1",
+    "apellido2": "apellido2",
+    "sexo": "sexo",
+    "pais": "pais",
+    "institutional_email": "institutional_email",
+    "emails": "emails"
+  }
+}
