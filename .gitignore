@@ -131,3 +131,4 @@ data/
 .idea/
 temp/
 mongodb/
+institution_config.json
